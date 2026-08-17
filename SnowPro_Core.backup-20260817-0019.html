@@ -1,0 +1,3545 @@
+<!DOCTYPE html><html lang="zh"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d1b2a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>SnowPro Core · 速查 & 计划</title>
+<style>
+:root{
+  --ink:#0d1b2a; --ink2:#3c5068; --mute:#7b8ea6;
+  --paper:#f2f5f8; --card:#ffffff; --line:#dde5ed;
+  --frost:#1b6ca8; --frost-l:#e3eff8; --amber:#b26a00; --amber-l:#fdf1de;
+  --crit:#a8324a; --crit-l:#fbe9ec;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Noto Sans CJK JP","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,"Roboto Mono",monospace;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.72;letter-spacing:.01em;padding-bottom:64px}
+
+/* ---- top bar ---- */
+header{position:sticky;top:0;z-index:40;background:var(--ink);color:#fff;
+  padding:env(safe-area-inset-top) 0 0 0;box-shadow:0 1px 0 rgba(0,0,0,.15)}
+.hrow{display:flex;align-items:center;gap:10px;padding:9px 12px}
+.brand{font-size:13px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;
+  color:#8fc4e8;white-space:nowrap}
+.count{margin-left:6px;font-family:var(--mono);font-size:12px;color:#a8c4dc;
+  background:rgba(255,255,255,.08);padding:3px 8px;border-radius:99px;white-space:nowrap}
+button.terse{margin-left:auto;font:inherit;font-size:12px;font-weight:600;cursor:pointer;
+  color:#a8c4dc;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);
+  padding:3px 10px;border-radius:99px;white-space:nowrap}
+button.terse[aria-pressed="true"]{background:#5fb0e6;border-color:#5fb0e6;color:#06243b}
+/* 速读模式：隐藏解释层，保留结论层 */
+body.terse .sbody>p,body.terse .sbody>ul,body.terse .sbody>ol,
+body.terse .sbody>blockquote:not(.key),body.terse .sbody>hr,
+body.terse .sbody>pre{display:none}
+body.terse .sec.keepall .sbody>*{display:revert}
+body.terse .sbody>h3{margin-top:14px}
+/* 考前模式：只保留 ★ 核心口诀与核心表 */
+body.exam .sbody>*{display:none}
+body.exam .sbody>blockquote.key.core,
+body.exam .sbody>.tw.core{display:block}
+body.exam .sbody>h3{display:none}
+body.exam .sec.nocore{display:none}
+body.exam .sbody>blockquote.key.core{margin:10px 0}
+body.exam .sec.keepall .sbody>*{display:revert}
+body.exam .sec.keepall{display:block}
+/* 冲刺模式：每个核心块只留第一行（★ 口诀本身） */
+body.blitz .sbody>*{display:none}
+body.blitz .sbody>blockquote.key.core{display:block;margin:8px 0}
+body.blitz .sbody>blockquote.key.core>*:not(:first-child){display:none}
+body.blitz .sec.nocore,body.blitz .sec.nostar{display:none}
+.tersehint{display:none}
+body.terse .tersehint{display:block;margin:0 0 10px;padding:8px 12px;
+  border-left:3px solid #5fb0e6;background:rgba(95,176,230,.08);
+  font-size:13px;color:var(--muted);border-radius:0 6px 6px 0}
+.tabs{display:flex;border-top:1px solid rgba(255,255,255,.12)}
+.tab{flex:1;padding:11px 4px;text-align:center;font-size:14px;font-weight:600;
+  color:#8fa8c0;background:none;border:0;font-family:inherit;cursor:pointer;position:relative}
+.tab.on{color:#fff}
+.tab.on::after{content:"";position:absolute;left:22%;right:22%;bottom:0;height:3px;
+  background:#5fb0e6;border-radius:3px 3px 0 0}
+#q{width:100%;border:0;border-top:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);color:#fff;font:inherit;font-size:15px;
+  padding:10px 14px;outline:none}
+#q::placeholder{color:#7f9bb5}
+
+/* ---- toc drawer ---- */
+.tocbtn{background:rgba(255,255,255,.1);border:0;color:#fff;width:34px;height:30px;
+  border-radius:7px;font-size:15px;cursor:pointer;display:grid;place-items:center}
+#toc{position:fixed;inset:0;z-index:50;background:rgba(8,17,28,.6);display:none}
+#toc.open{display:block}
+.tocpanel{position:absolute;top:0;left:0;bottom:0;width:82%;max-width:340px;
+  background:var(--card);overflow-y:auto;padding:18px 0 40px;
+  box-shadow:2px 0 24px rgba(0,0,0,.3)}
+.toch{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);
+  padding:14px 18px 6px;font-weight:700}
+.tocitem{display:block;padding:11px 18px;font-size:14.5px;color:var(--ink2);
+  text-decoration:none;border-bottom:1px solid var(--line);line-height:1.4}
+.tocitem:active{background:var(--frost-l)}
+
+/* ---- sections ---- */
+main{padding:12px 10px 0}
+.pane{display:none}.pane.on{display:block}
+.pagetitle{font-size:19px;font-weight:800;line-height:1.35;margin:2px 4px 12px;
+  letter-spacing:.01em}
+details.sec.meta{background:#eaf1f7;border-color:#cbdcea}
+details.sec.meta > summary{color:var(--ink2);font-size:14.5px;font-weight:600}
+details.sec{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  margin-bottom:9px;overflow:hidden}
+details.sec[open]{border-color:#bcd4e6}
+summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;align-items:center;
+  gap:10px;font-weight:700;font-size:15.5px;line-height:1.4}
+summary::-webkit-details-marker{display:none}
+.stitle{flex:1}
+.chev{width:9px;height:9px;border-right:2px solid var(--mute);border-bottom:2px solid var(--mute);
+  transform:rotate(45deg);transition:transform .18s;flex:none;margin-right:2px}
+details[open] .chev{transform:rotate(-135deg)}
+.sbody{padding:0 16px 16px;border-top:1px solid var(--line);padding-top:12px}
+
+/* ---- content type ---- */
+h3{font-size:16px;margin:22px 0 8px;padding-left:11px;border-left:4px solid var(--frost);
+  line-height:1.4}
+h3:first-child{margin-top:2px}
+h4{font-size:14.5px;margin:16px 0 6px;color:var(--ink2)}
+.tagx{display:inline-block;margin-left:8px;padding:1px 6px;border-radius:4px;font-size:11px;font-weight:400;background:var(--kbg,#eef2f7);color:var(--ink2);vertical-align:middle}
+p{margin:9px 0}
+ul,ol{padding-left:21px;margin:9px 0}
+li{margin:5px 0}
+strong{font-weight:700;color:#08172a}
+code{font-family:var(--mono);font-size:.86em;background:var(--frost-l);color:#0f4d7a;
+  padding:1.5px 5px;border-radius:4px;word-break:break-word}
+pre{background:#0f2136;color:#cfe3f2;padding:13px;border-radius:9px;overflow-x:auto;
+  font-size:12.5px;line-height:1.62;-webkit-overflow-scrolling:touch}
+pre code{background:none;color:inherit;padding:0}
+blockquote{margin:12px 0;padding:11px 14px;background:var(--amber-l);
+  border-left:4px solid var(--amber);border-radius:0 8px 8px 0;font-size:14.5px}
+blockquote p{margin:5px 0}
+hr{border:0;border-top:1px solid var(--line);margin:22px 0}
+a{color:var(--frost)}
+
+/* ---- tables: the core artifact ---- */
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:12px 0;
+  border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;line-height:1.55;min-width:100%}
+th{background:#eef3f8;text-align:left;font-weight:700;font-size:12.5px;
+  letter-spacing:.02em;color:var(--ink2);padding:9px 11px;border-bottom:2px solid #cfdce8;
+  white-space:nowrap;position:sticky;top:0}
+td{padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+tbody tr:nth-child(even){background:#fafcfe}
+td:first-child{font-weight:600;color:#0b2038}
+
+/* checkbox lines in the plan */
+.chk{display:block;padding:8px 2px;border-bottom:1px dashed var(--line);font-size:14.5px}
+
+/* search */
+mark{background:#ffe58a;color:inherit;border-radius:2px;padding:0 1px}
+.hide{display:none !important}
+.nores{padding:30px 16px;text-align:center;color:var(--mute);font-size:14px}
+
+/* footer */
+footer{text-align:center;color:var(--mute);font-size:11.5px;padding:26px 16px 10px;
+  font-family:var(--mono);letter-spacing:.05em}
+.top{position:fixed;right:13px;bottom:calc(13px + env(safe-area-inset-bottom));z-index:30;
+  width:44px;height:44px;border-radius:50%;background:var(--ink);color:#fff;border:0;
+  font-size:17px;box-shadow:0 3px 14px rgba(13,27,42,.34);display:none;cursor:pointer}
+.top.show{display:block}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media(min-width:760px){body{font-size:17px}main{max-width:820px;margin:0 auto;padding:16px}}
+</style></head><body>
+
+<header>
+  <div class="hrow">
+    <button class="tocbtn" aria-label="目录">☰</button>
+    <div class="brand">SnowPro Core</div>
+    <button class="terse" aria-pressed="false" title="点击循环：全文 → 速读（标题·表格·口诀）→ 考前（只看 ★ 核心口诀）">全文</button>
+    <div class="count"></div>
+  </div>
+  <div class="tabs">
+    <button class="tab on" data-p="notes">速查笔记</button>
+    <button class="tab" data-p="plan">冲刺计划</button>
+  </div>
+  <input id="q" placeholder="搜索：cache / Fail-safe / 限定词 / 8月24…" autocomplete="off">
+</header>
+
+<div id="toc"><nav class="tocpanel">
+  <div class="tocgrp" data-tab="notes">
+    <div class="toch">速查笔记</div><a class="tocitem" data-tab="notes" data-i="0">Domain 1：架构与核心特性（31%，最重）</a>
+<a class="tocitem" data-tab="notes" data-i="1">Domain 2：账户管理与治理（20%）</a>
+<a class="tocitem" data-tab="notes" data-i="2">Domain 3：数据加载与连接（18%）</a>
+<a class="tocitem" data-tab="notes" data-i="3">Domain 4：性能优化与查询（21%）</a>
+<a class="tocitem" data-tab="notes" data-i="4">Domain 5：数据协作（10%）</a>
+<a class="tocitem" data-tab="notes" data-i="5">Domain 6（跨域）：C03 新增内容 —— 你的题库覆盖不到的部分</a>
+<a class="tocitem" data-tab="notes" data-i="6">高频易错清单 · 第二部分（C03 新增，共 10 条）</a>
+<a class="tocitem" data-tab="notes" data-i="7">高频易错清单 · 第一部分（16 条，原有域）</a>
+<a class="tocitem" data-tab="notes" data-i="8">附录：英文题干关键词与术语对照</a>
+<a class="tocitem" data-tab="notes" data-i="9">建议用法</a>
+  </div>
+  <div class="tocgrp hide" data-tab="plan">
+    <div class="toch">冲刺计划</div><a class="tocitem" data-tab="plan" data-i="0">总体节奏</a>
+<a class="tocitem" data-tab="plan" data-i="1">阶段一：建框架（8/12 – 8/14）✅ 已完成</a>
+<a class="tocitem" data-tab="plan" data-i="2">Domain 6（C03 新增）：贯穿阶段二～四的独立线程</a>
+<a class="tocitem" data-tab="plan" data-i="3">阶段二：背题全量（8/15 – 8/22）</a>
+<a class="tocitem" data-tab="plan" data-i="4">阶段三：模考 + 错题攻坚（8/23 – 8/26）</a>
+<a class="tocitem" data-tab="plan" data-i="5">阶段四：收尾（8/27 – 8/28）</a>
+<a class="tocitem" data-tab="plan" data-i="6">阶段五：考试日（8/29 周六 15:45，线下）</a>
+<a class="tocitem" data-tab="plan" data-i="7">每日打卡</a>
+<a class="tocitem" data-tab="plan" data-i="8">七条硬规则</a>
+<a class="tocitem" data-tab="plan" data-i="9">行政事项（剩余 2 项）</a>
+<a class="tocitem" data-tab="plan" data-i="10">每日复盘：这份计划要天天改</a>
+  </div>
+</nav></div>
+
+<main>
+  <section class="pane on" id="notes"><div class="pagetitle">SnowPro Core (COF-C03) 核心概念速查</div><details class="sec meta"><summary><span class="stitle">题头：考试信息 · 约束 · 核心思路</span><span class="chev"></span></summary><div class="sbody">
+<blockquote>
+<p>按官方考纲五大域组织，括号内为考试占比。优先级从上到下。
+目标：读完这份笔记后再刷题，正确率应从 46% 提升到 70%+。</p>
+</blockquote>
+<hr />
+</div></details>
+<details class="sec" id="n1"><summary><span class="stitle">Domain 1：架构与核心特性（31%，最重）</span><span class="chev"></span></summary><div class="sbody">
+<h3>三层架构</h3>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>做什么</th>
+<th>计费</th>
+<th>关键点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Cloud Services</strong></td>
+<td><strong>协调 / 大脑</strong>：认证与 RBAC、查询解析与优化（决定剪枝哪些 micro-partition）、元数据管理、事务管理、基础设施管理</td>
+<td>超过当日计算用量 <strong>10%</strong> 的部分才收费</td>
+<td><strong>元数据缓存 + Result Cache 都住在这里</strong></td>
+</tr>
+<tr>
+<td><strong>Compute（Virtual Warehouse）</strong></td>
+<td><strong>执行 / 动手</strong>：跑查询</td>
+<td>按 credit/秒计费，最少 60 秒</td>
+<td>各 warehouse 之间完全独立，互不影响性能；<strong>Local Disk (SSD) Cache 在这里</strong></td>
+</tr>
+<tr>
+<td><strong>Database Storage</strong></td>
+<td><strong>存</strong>：列式压缩存储在云对象存储（micro-partition）</td>
+<td>按压缩后的 TB/月</td>
+<td>用户无法直接访问底层文件</td>
+</tr>
+</tbody>
+</table>
+<blockquote class="key core">
+<p><strong>★ 口诀：服务层动脑，仓库层动手，存储层躺平。</strong></p>
+<p><strong>题干出现 <code>coordinates</code> / <code>manages</code> / <code>optimizes</code> / <code>authenticates</code> → Cloud Services</strong>（它是<u>协调者</u>，不是干活的）；出现 <code>executes</code> / <code>processes the query</code> → <strong>Compute</strong>；出现 <code>stores</code> / <code>compressed</code> / <code>columnar</code> → <strong>Storage</strong>。</p>
+<p>⚠️ <strong>最容易放错的两个：Result Cache 在 Cloud Services（所以命中时<u>不需要 warehouse</u>）；元数据也在 Cloud Services（不在 Storage）。</strong>只有 <strong>Local Disk / SSD Cache</strong> 在 Compute。</p>
+<p>⚠️ <strong>micro-partition 要拆成两半放</strong>：<strong>元数据</strong>（每列的 MIN/MAX、DISTINCT 数、NULL 数、行数 —— 用于剪枝）在 <strong>Cloud Services</strong>；<strong>物理数据</strong>（列式压缩后的字节，在 S3 / Blob / GCS 上）在 <strong>Storage</strong>。<br>
+题干只要出现 <code>physical storage</code> / <code>actual data</code> → <strong>Storage</strong>；出现 <code>metadata about</code> / <code>statistics</code> → <strong>Cloud Services</strong>。<u>"微分区归谁管"这个问法本身是模糊的，必须看它问的是元数据还是数据。</u></p>
+<p>⚠️ <strong><code>query execution PLAN</code> ≠ <code>query execution</code></strong>——重心在 <code>PLAN</code> 上。<strong>生成执行计划(optimizer)在 Cloud Services；执行查询在 Compute。</strong>建筑师画图纸 vs 施工队盖楼。<br>
+Optimizer 住在 Cloud Services，负责：解析 SQL、读元数据做<strong>分区裁剪</strong>、定 JOIN 顺序与算法、产出执行计划；计划生成后<u>才</u>交给 warehouse 跑。<strong>看到 <code>execution</code> 别急着选 Compute，先看它后面有没有 <code>plan</code>。</strong></p>
+<p><strong>★ 三层里<u>只有 Compute 层用户可配置</u>，另两层全托管。</strong>选项问 <code>which layer can the user configure / has user control</code> → <strong>Query Processing / Virtual Warehouse</strong>。</p>
+<p>⚠️ <strong>判据：「用它」≠「配它」。</strong>在 Cloud Services 里建角色、授权、看 Query History——那是<u>消费服务</u>；给仓库改 <code>WAREHOUSE_SIZE</code>、设 <code>AUTO_SUSPEND=60</code>、开 multi-cluster——那才是<u>调资源参数</u>。<strong>能配置 = 有旋钮可拧，不是「有功能可用」。</strong><br>
+<u>为什么偏偏是它</u>：存算分离的意义就在于计算层是你<strong>租用</strong>的弹性资源，按需付费所以必须可调；Storage 与 Cloud Services 是 Snowflake 的<strong>基础设施承诺</strong>——你付钱但不管理。</p>
+</blockquote>
+<p><strong>必记</strong>：三层是"存算分离 + 服务解耦"。这是 Snowflake 所有优势（弹性、并发隔离、零拷贝克隆）的根源。看到题目问"为什么两个团队互不影响"→ 独立 warehouse。</p>
+<blockquote class="key">
+<p><strong>★ 产品定位题（送分）：三支柱 = Performance / Concurrency / Simplicity</strong>，正好是三层架构的三个推论——<strong>存算分离</strong>→性能，<strong>多仓库互不抢资源</strong>→并发（最有辨识度的一条，传统数仓的痛点就是「ETL 一跑 BI 就卡」），<strong>全托管、无需调索引/分区/vacuum</strong>→简单。</p>
+<p><strong>口诀：快、并、简 —— 云上专有，不落地不开源。</strong></p>
+<p><strong>排除法</strong>：选项里出现 <code>on-premise</code> / <code>open source</code> / <code>self-managed</code> 等<strong>传统 IT 或开源阵营的价值观</strong>，<strong>直接排除</strong>——那是竞品（Databricks、Trino、ClickHouse）的卖点，与 Snowflake 定位相反。Snowflake 是<strong>纯云原生 + 专有闭源</strong>，只跑在 AWS / Azure / GCP 上。</p>
+</blockquote>
+<h3>Editions（版本）</h3>
+<table>
+<thead>
+<tr>
+<th>Edition</th>
+<th>新增能力</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Standard</td>
+<td><strong>基础功能全都有</strong>：<strong>Secure Data Sharing</strong>、Time Travel <strong>1 天</strong>、Fail-safe 7 天、自动加密、全部标准 SQL 与半结构化数据</td>
+</tr>
+<tr>
+<td><strong>Enterprise</strong><br><em>性能 + 治理</em></td>
+<td>Time Travel 最长 <strong>90 天</strong>、<strong>多集群 warehouse</strong>、<strong>性能三件套：物化视图 / Search Optimization / Query Acceleration</strong>、<strong>治理四件套：列级安全（Dynamic Data Masking · External Tokenization）/ Row Access Policy / Object Tagging / <code>ACCESS_HISTORY</code></strong></td>
+</tr>
+<tr>
+<td><strong>Business Critical</strong><br><em>合规 + 灾备</em></td>
+<td><strong>HIPAA / PCI / HITRUST</strong> 合规、<strong>Tri-Secret Secure</strong>（客户自管密钥）、<strong>PrivateLink</strong>、<strong>数据库复制与故障转移</strong>（跨区容灾）</td>
+</tr>
+<tr>
+<td>Virtual Private (VPS)</td>
+<td>完全独立的 Snowflake 环境</td>
+</tr>
+</tbody>
+</table>
+<blockquote class="key core">
+<p><strong>口诀：标准能用，企业能调，关键合规，VPS 独门独院。</strong></p>
+<p><strong>★ 一个更粗但够用的判断法（记这个，别背全表）：</strong><br>
+听起来像<strong>性能优化或数据治理</strong> → <strong>Enterprise</strong>　|　听起来像<strong>安全合规或灾难恢复</strong> → <strong>Business Critical</strong>　|　听起来像<strong>基础功能</strong> → <strong>Standard</strong></p>
+<p>⚠️ <strong>最常错的两个，都是 Standard 就有</strong>，别因为"听起来高级"而选 Enterprise：<strong>① Secure Data Sharing　② 所有认证方式（Federated/SSO、MFA、Key-pair）</strong>。<br>
+<strong>记忆逻辑：安全登录是「基本人权」，Snowflake 不拿它卖钱；卖钱的是性能（多集群、MV、SOS、QAS）和合规隔离（PrivateLink、Tri-Secret、VPS）。</strong><br>
+⚠️ <strong>但这条规律只管「登录」，别外推到「安全」整体</strong>。准确的分界线是：<br>
+<strong>基础的安全「<u>入口</u>」控制（让不让你进门）→ 所有版本</strong>：SSO/联合认证、MFA、Key-pair、Network Policy、<strong><code>SCIM</code></strong>（跨域身份管理协议，和 IdP 自动同步用户与组——<u>它是「接入」不是「治理」，所以 Standard 就有</u>）<br>
+<strong>精细的数据「<u>治理</u>」能力（进门后你能看多细）→ Enterprise 起</strong>：列级安全 / Dynamic Data Masking / External Tokenization、Row Access Policy、Object Tagging<br>
+另：你已经学过的 <strong>QAS / SOS / MV「性能三件套」全在 Enterprise 这一档</strong>，串起来记，不要一个个背。<br>
+<strong>★ 三段式记法（安全类版本题一律套这个）：<u>认证与接入</u> → Standard　|　<u>数据治理</u> → Enterprise　|　<u>合规与密钥主权</u> → Business Critical。</strong><br>
+⚠️ <strong>「看到 security 就往高版本猜」是本类题的唯一陷阱来源。</strong>先把这个词归到三段里的哪一段，<u>再</u>选版本。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>题干出现</th>
+<th>指向版本</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>Time Travel 超过 1 天 / 多集群 / <strong>MV · 搜索优化 · 查询加速</strong> / 列级安全 · 动态脱敏 / 行访问策略 / Object Tagging / ACCESS_HISTORY</td><td><strong>Enterprise</strong></td></tr>
+<tr><td>HIPAA / PHI / PCI / 客户自管密钥（Tri-Secret）/ PrivateLink / 跨区域灾备 · 故障转移</td><td><strong>Business Critical</strong></td></tr>
+<tr><td><strong>mask / 脱敏 / 部分用户看不到某列</strong> · <strong>只能看到自己区域的行</strong>（Row Access Policy）· <strong>External Tokenization</strong></td><td><strong>Enterprise</strong>（"进门后看多细" = 治理）</td></tr>
+<tr><td><strong>自带加密密钥 / customer-managed key</strong> · 医疗 · 金融合规</td><td><strong>Business Critical</strong>（Tri-Secret）</td></tr>
+<tr><td>完全隔离 / 专属环境 / 不与其他客户共享任何资源 / 金融监管最高要求</td><td><strong>VPS</strong></td></tr>
+<tr><td><strong>Secure Data Sharing</strong> / Time Travel 1 天 / Fail-safe / 半结构化数据 / <strong>object-level access control（= RBAC 本身）</strong></td><td><strong>Standard 就有</strong>（易误选 Enterprise）</td></tr>
+</tbody>
+</table>
+<blockquote class="key core">
+<p><strong>⚠️ 最容易错的一刀</strong>：Enterprise 有「列级安全、动态脱敏」，听起来很像合规，于是把 HIPAA/PCI 题也选成 Enterprise。<br>
+分界线是<strong>动机</strong>：<strong>脱敏 = 我自己想保护数据</strong>（Enterprise）；<strong>合规认证 = 法律要求我必须达标</strong>（Business Critical）。</p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ 四档一句话：标准版给门禁，企业版会切片，关键版扛合规，VPS 独占楼。</strong></p>
+<p><strong>门禁</strong> = 对象级 RBAC、MFA、SSO、Network Policy　|　<strong>切片</strong> = 列级/行级安全、多集群、MV、SOS/QAS、90 天 TT、<code>ACCESS_HISTORY</code>　|　<strong>合规</strong> = HIPAA/PCI、Tri-Secret、PrivateLink、Failover　|　<strong>独占楼</strong> = VPS 完全隔离</p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ 看到 <code>dedicated</code> / <code>isolated</code> / <code>not shared with other customers</code> → 一律 VPS</strong>（专属元数据存储、专属仓库池都算）。</p>
+<p>⚠️ <strong>"有自己的" ≠ "专属的"</strong>：Standard 也有自己的 metadata store，但那是<u>逻辑隔离</u>——物理上跑在与其他客户共用的 Cloud Services 上。<strong>公寓比喻：你有自己的房间（逻辑），VPS 是买下整栋楼（物理）。</strong>题干问 dedicated 就是在问<u>物理</u>独占。</p>
+<p>⚠️ <strong><code>VPS</code> = Virtual Private <u>Snowflake</u>，不是你的 VPC。</strong>选项写 <code>runs within the customer's own Virtual Private Cloud</code> → <strong>False</strong>。<strong>Snowflake 是纯 SaaS，任何版本（含 VPS）都跑在 <u>Snowflake 自己的云账户</u>里，从不部署到客户 VPC。</strong><br>
+VPS 卖的是<strong>隔离</strong>（独立元数据存储 + 独立计算池，不与任何其他客户共享组件），不是<strong>落户到你家</strong>——<u>房子还是 Snowflake 的，只是给你一整栋。</u><br>
+<strong>常被一起混的 <code>PrivateLink</code></strong>：在<u>你的</u> VPC 和 <u>Snowflake 的</u> VPC 之间建私有通道，流量不走公网——<strong>但 Snowflake 依然在它自己那边。两者都不把 Snowflake 搬进你的 VPC。</strong></p>
+</blockquote>
+<blockquote class="key">
+<p>⚠️ <strong>「object-level access control」不是高级功能</strong>——它就是 <code>GRANT SELECT ON TABLE … TO ROLE …</code> 这套 RBAC，<strong>Standard 就有</strong>，否则连基本用户隔离都做不到。名字里带 "control / security" 不等于要付费。</p>
+<p>⚠️ <strong>问 "only available in Enterprise <u>or higher</u>" 时，Business Critical 独有的功能<u>不算</u></strong>（如 Tri-Secret Secure——它在 Enterprise 版<u>不可用</u>）。选项里同时出现 Enterprise 功能和 Business Critical 功能时，<strong>选恰好从 Enterprise 起步的那个</strong>。</p>
+<p>⚠️ <strong>SOC 2 是公司层面的认证，不挂钩版本</strong>；挂钩版本的是 <strong>HIPAA / PCI</strong>（Business Critical）。</p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ 先读问法：<code>available with Enterprise</code> ≠ <code>only in Enterprise</code>。</strong></p>
+<table>
+<thead><tr><th>问法</th><th>含义</th><th>Standard 就有的功能</th></tr></thead>
+<tbody>
+<tr><td><code>available with / in Enterprise</code></td><td>Enterprise <strong>用得上</strong>吗</td><td><strong>✅ 算对</strong>（下位版本有 → 上位版本必然有）</td></tr>
+<tr><td><code>only available in</code> / <code>exclusive to</code> / <code>requires</code> / <code>minimum edition</code></td><td>是不是<strong>恰好从</strong>这一档起步</td><td>❌ 不算</td></tr>
+</tbody>
+</table>
+<p><strong>版本是向上累积的</strong>：Standard ⊂ Enterprise ⊂ Business Critical ⊂ VPS。所以 <code>available with Enterprise</code> 的正确答案集 = <strong>Standard 的 + Enterprise 的</strong>，只排除 Business Critical 及以上。<u>Geospatial（GEOGRAPHY/GEOMETRY）是 Standard 起就有的,在这种问法下照样是对的。</u></p>
+<p>⚠️ <strong>选项把两个功能捆在一起时，按<u>门槛最高</u>的那个算。</strong><code>replication and failover</code>：单纯 <strong>replication 是 Standard</strong>，但 <strong>failover / failback 要 Business Critical</strong>——只要 failover 这个词在，整条就被抬到 Business Critical。<strong>读到 <code>and</code> 就拆开分别定档。</strong></p>
+<p>⚠️ <strong>「index」是 Snowflake 里的绝对假词</strong>——没有索引这个概念，靠<strong>微分区 + 元数据剪枝</strong>替代。<code>index</code> / <code>automated index management</code> 出现即淘汰。</p>
+</blockquote>
+<h3>界面与工具（Interfaces &amp; Tools）<span class="tagx">考纲 1.2 整条 · 题库可能还没出到</span></h3>
+<table>
+<thead>
+<tr>
+<th>工具</th><th>是什么</th><th>考点</th>
+</tr>
+</thead>
+<tbody>
+<tr><td><strong>Snowsight</strong></td><td>默认 Web UI</td><td>worksheet、图表、Dashboard、监控、Marketplace 都在这里。<strong>不能跑 <code>PUT</code>/<code>GET</code></strong></td></tr>
+<tr><td><strong>Snowflake CLI</strong>（<code>snow</code>）</td><td>新一代命令行，面向<strong>应用开发与部署</strong>（Streamlit、Snowpark、Native App、Git）</td><td>与老的 <strong>SnowSQL</strong> 区分：SnowSQL 是<strong>交互式跑 SQL</strong> 的客户端（能 PUT/GET），Snowflake CLI 偏 <strong>DevOps / CI-CD</strong></td></tr>
+<tr><td><strong>IDE 集成</strong></td><td>VS Code 扩展等</td><td>在编辑器里直接连账户、跑 SQL / Python</td></tr>
+<tr><td><strong>Drivers vs Connectors</strong></td><td>Driver = <strong>通用协议</strong>（JDBC / ODBC）；Connector = <strong>针对某语言或某系统</strong>（Python、Spark、Kafka、Node.js）</td><td>题干出现具体语言/系统名 → <strong>connector</strong>；出现 JDBC/ODBC → <strong>driver</strong></td></tr>
+</tbody>
+</table>
+<blockquote class="key core">
+<p><strong>★ 通用答案模式：Snowflake 的管理操作基本都有<u>两条路</u>——Snowsight UI 和 SQL。</strong>问「怎么创建/配置 XX」时，UI 与 SQL 通常<strong>都对</strong>（CLI、REST API、connector 本质也是发 SQL）。<strong>看到「只能用 SQL」「只能在 UI 里」先怀疑。</strong></p>
+<p>⚠️ <strong>已知例外：<code>PUT</code> / <code>GET</code> 不能在 Snowsight worksheet 里跑</strong>，必须用 SnowSQL 或驱动。</p>
+</blockquote>
+<h3>对象层级</h3>
+<pre><code>Organization
+└── Account
+    ├── User / Role / Warehouse / Resource Monitor / Network Policy  ← 账户级
+    └── Database
+        └── Schema
+            └── Table / External · Iceberg Table / View / MV / Stage /
+                File Format / Sequence / UDF / Stored Procedure /
+                Pipe / Stream / Task / Tag / Masking · Row Access Policy
+</code></pre>
+<blockquote class="key">
+<p><strong>★ 术语陷阱：<u>Database Objects</u> = 「库<u>里的</u>东西」，不是「库本身」。</strong>重点在<strong>对象</strong>，<code>database</code> 只是限定它们住在库里。<br>
+所以「Schema 是对 <strong>database objects</strong> 的逻辑分组」= <strong>True</strong>：它把 ORDERS 表、V_ORDERS 视图、MY_STAGE 归在一起，<u>不是</u>说 schema 在给「多个数据库」分组。</p>
+<p><strong>凡上表 Schema 层里的都算 database objects；账户级的（Warehouse / Role / User / Resource Monitor / Share / Network Policy）都不算。</strong></p>
+</blockquote>
+<p><strong>注意</strong>：Share 是<strong>账户级</strong>对象，不在 schema 里。Warehouse 也是账户级。</p>
+<h3>参数层级与优先级</h3>
+<pre><code>Account → User → Session          （会话参数）
+Account → Database → Schema → Object （对象参数）
+</code></pre>
+<p><strong>越具体越优先</strong>。Session 级设置覆盖 User 级，User 级覆盖 Account 级。</p>
+<h3>Virtual Warehouse</h3>
+<ul>
+<li><strong>尺寸</strong>：XS → 4XL/6XL，每上升一档<strong>服务器数和 credit/小时都翻倍</strong>（见下表）</li>
+<li><strong>Scale UP（改大小）</strong> = 解决<strong>单个查询慢</strong>、复杂查询、数据溢出</li>
+<li><strong>Scale OUT（多集群，加集群数）</strong> = 解决<strong>并发排队</strong>（queuing）</li>
+<li><strong>计费</strong>：启动后最少收 60 秒，之后按秒。<strong>调整大小不影响正在运行的查询</strong>，只对新查询生效。</li>
+<li><strong>Auto-suspend</strong> 默认 600 秒（Snowsight 建表时常设 5–10 分钟）。挂起会清空 warehouse 本地缓存。</li>
+<li><strong>Auto-resume</strong>：有查询进来自动启动。</li>
+<li><strong>多集群模式</strong>：</li>
+<li><strong>Maximized</strong>（min = max）：一直全开，用于可预测的高并发</li>
+<li><strong>Auto-scale</strong>（min &lt; max）：按需增减</li>
+<li><strong>Scaling policy</strong>：<code>Standard</code>（优先减少排队，激进启新集群）vs <code>Economy</code>（优先省钱，集群要有足够负载才启动，可能让查询排队更久）。<br>
+<strong>★ 数字必背：<code>ECONOMY</code> 启动看 <u>6 分钟</u>——系统判断积压足以让新集群持续忙满 6 分钟才启；关闭要连续 <strong>5–6 次</strong>检查（约 5–6 分钟）负载可转移才关。<br>
+<code>STANDARD</code>：检测到排队<u>立即</u>启动；关闭只需连续 <strong>2–3 次</strong>检查（约 2–3 分钟）。</strong><br>
+<u>口诀：Economy 六分钟起步、六分钟收工；Standard 立刻起、两三分钟走。</u>一句话记向：<strong>Economy 省钱 → 慢启慢停（启动了就用够本）；Standard 保性能 → 快启快停。</strong></li>
+<li><strong>Snowpark-optimized</strong>：内存/CPU 加强，用于大内存的 ML / Snowpark 工作负载</li>
+</ul>
+<blockquote class="key">
+<p><strong>★ 多集群模式不是「选项」，是 MIN/MAX 两个数字的关系<u>隐式决定</u>的。</strong>Snowflake <strong>没有</strong>任何「模式」字段可填 —— 决定它的只有 <code>MIN_CLUSTER_COUNT</code> 和 <code>MAX_CLUSTER_COUNT</code>。<br>
+（<code>WAREHOUSE_TYPE</code> <strong>确实存在</strong>，但它的值只有 <code>STANDARD</code> / <code>SNOWPARK-OPTIMIZED</code>，与多集群无关——别被这个真参数名骗过去。）</p>
+<p><strong>口诀：min ≠ max 会伸缩，min = max 全打开。</strong></p>
+</blockquote>
+<table>
+<thead>
+<tr><th>设置</th><th>模式</th><th>行为</th></tr>
+</thead>
+<tbody>
+<tr><td>MIN ≠ MAX（如 1 和 5）</td><td><strong>Auto-scale</strong></td><td>按排队负载动态增减集群</td></tr>
+<tr><td>MIN = MAX（如 5 和 5）</td><td><strong>Maximized</strong></td><td>启动即全开 5 个，不增不减</td></tr>
+</tbody>
+</table>
+<blockquote class="key">
+<p>⚠️ <strong>干扰项套路：虚构参数</strong> —— 把一个<u>模式名</u>包装成能填进某字段的枚举值。<strong>选项里出现你没在文档见过的参数名，先怀疑它根本不存在</strong>（同类：编造的视图名、编造的 warehouse type）。</p>
+</blockquote>
+<blockquote class="key">
+<p><strong>★ 最狠的一个干扰项：Auto-resize（不存在）。</strong>Snowflake <u>永远不会自动改 warehouse size</u>，它只会自动增减<strong>集群数</strong>。</p>
+<p><strong>口诀：只有 suspend / resume 带 auto；size 靠手动，cluster 靠 min-max。</strong></p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ 计费看「状态」，不看「忙不忙」：<code>idle / inactive</code> ≠ 免费。</strong>只要仓库是 <strong>running</strong>，节点已分配、已开机待命，<strong>照扣 credit</strong>。</p>
+<p><strong>口诀：开着就烧钱，挂起才停表 —— 关键看 suspended，不看忙不忙。</strong></p>
+<p>⚠️ <strong>判断题里出现 <code>idle</code> / <code>inactive</code> 而<u>没说</u> <code>suspended</code>，默认就是「开着但没活干」→ 照收费。</strong>这也正是 <code>AUTO_SUSPEND</code> 存在的意义：问「怎么控制仓库成本」→ 答案基本都指向 <strong>AUTO_SUSPEND + AUTO_RESUME</strong>。</p>
+</blockquote>
+<table>
+<thead>
+<tr><th>状态</th><th>有查询在跑</th><th>扣 credit</th></tr>
+</thead>
+<tbody>
+<tr><td>Running / Active</td><td>有</td><td>✅</td></tr>
+<tr><td><strong>Running but idle</strong>（inactive）</td><td>没有，但仓库还开着</td><td><strong>✅ 照扣</strong></td></tr>
+<tr><td><strong>Suspended</strong></td><td>仓库已关</td><td><strong>❌ 不扣</strong></td></tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr><th>概念</th><th>是否自动</th><th>怎么控制</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Resize</strong>（改 size，XS→L）</td><td>❌ 纯手动</td><td><code>ALTER WAREHOUSE … SET WAREHOUSE_SIZE=</code>，<strong>无 auto 参数</strong></td></tr>
+<tr><td><strong>Scale out</strong>（加集群数）</td><td>✅ 自动（auto-scale 模式）</td><td><code>MIN/MAX_CLUSTER_COUNT</code></td></tr>
+</tbody>
+</table>
+<h4>CREATE WAREHOUSE 常考参数清单（不在表上的词，基本可直接排除）</h4>
+<table>
+<thead>
+<tr><th>参数</th><th>取值</th></tr>
+</thead>
+<tbody>
+<tr><td><code>WAREHOUSE_SIZE</code></td><td>XSMALL … 6XLARGE</td></tr>
+<tr><td><code>WAREHOUSE_TYPE</code></td><td>STANDARD | SNOWPARK-OPTIMIZED</td></tr>
+<tr><td><code>MIN_CLUSTER_COUNT</code> / <code>MAX_CLUSTER_COUNT</code></td><td>1–10</td></tr>
+<tr><td><code>SCALING_POLICY</code></td><td>STANDARD | ECONOMY</td></tr>
+<tr><td><code>AUTO_SUSPEND</code></td><td><strong>秒数</strong>（0 或 NULL = 永不挂起）</td></tr>
+<tr><td><code>AUTO_RESUME</code></td><td>TRUE | FALSE</td></tr>
+<tr><td><code>INITIALLY_SUSPENDED</code></td><td>TRUE | FALSE</td></tr>
+<tr><td><code>RESOURCE_MONITOR</code></td><td>监控器名</td></tr>
+<tr><td><code>STATEMENT_TIMEOUT_IN_SECONDS</code> / <code>STATEMENT_QUEUED_TIMEOUT_IN_SECONDS</code></td><td>秒数</td></tr>
+</tbody>
+</table>
+<blockquote class="key">
+<p><strong>★ AUTO_SUSPEND 的关联陷阱</strong>：<strong>单位是秒不是分钟</strong>（600 = 10 分钟）；<strong>0 或 NULL = 永不挂起</strong>，会一直烧 credit。<br>
+挂起会丢 warehouse <strong>本地 SSD 缓存</strong>，设太短则缓存反复失效 → 常见建议 <strong>5–10 分钟</strong>；间歇性负载可更短以省钱。<br>
+<strong>Result Cache 不受影响</strong>——它在云服务层，warehouse 挂起照样命中，24 小时有效。</p>
+</blockquote>
+<h4>什么时候该「关掉」auto-suspend</h4>
+<blockquote class="key">
+<p><strong>关掉 = 永远不停 = 一直烧 credit</strong>，所以只有「常热的收益 &gt; 常烧的成本」时才关。官方只给两个理由：</p>
+<p><strong>口诀：关挂起，两个理由 —— 不停的活、不等的人。</strong>（steady workload / no lag time）</p>
+</blockquote>
+<table>
+<thead>
+<tr><th>场景</th><th>该怎么做</th><th>为什么</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>steady</strong> workload（持续不断有查询）</td><td><strong>关</strong> auto-suspend</td><td>本来就闲不到挂起，留着只会「刚挂起又被唤醒」抖动，成本上不吃亏</td></tr>
+<tr><td>要求<strong>零延迟 / 无冷启动</strong>（BI 仪表盘、实时应用）</td><td><strong>关</strong> auto-suspend</td><td>恢复有几秒 provisioning，且 <strong>SSD 缓存清空</strong>，前几个查询明显变慢。宁可多花钱保住热缓存 —— <strong>这是最核心的一条</strong></td></tr>
+<tr><td>用户在 24/7 期间的<strong>不同时间</strong>（at different times）用</td><td><strong>开</strong> auto-suspend</td><td>❌ <strong>方向相反的干扰项</strong>：<u>different times = 中间大量空档</u>，正是该自动挂起省钱的时候</td></tr>
+<tr><td>不想每次都手动开仓库</td><td>开 <strong>AUTO_RESUME</strong></td><td>❌ <strong>答非所问</strong>：这是另一个参数，与 auto-suspend 无关</td></tr>
+</tbody>
+</table>
+<blockquote class="key">
+<p>⚠️ <strong>陷阱设计</strong>：<code>24/7</code> 让人误读成「全天候 → 不能停」。<strong>真正的关键词是前面的 <u>different times</u>（错峰、间断），不是 24/7。</strong><br>
+<strong>一字之差</strong>：<code>different times</code> = 断断续续 → <strong>开</strong>挂起；<code>steady</code> = 持续不断 → <strong>关</strong>挂起。</p>
+<p><strong>配套记：错峰用 → 开挂起；说「手动」→ 那是 resume。</strong></p>
+</blockquote>
+<table>
+<thead>
+<tr><th>参数</th><th>作用</th><th>关闭的后果</th></tr>
+</thead>
+<tbody>
+<tr><td><code>AUTO_SUSPEND</code></td><td>闲置 N 秒后自动挂起</td><td>一直烧钱，但<strong>永远热</strong></td></tr>
+<tr><td><code>AUTO_RESUME</code></td><td>有查询进来自动恢复</td><td>必须<strong>手动</strong> <code>ALTER WAREHOUSE … RESUME</code></td></tr>
+</tbody>
+</table>
+<blockquote class="key core">
+<p><strong>★ 翻倍规律（必背，会直接考数字）：XS 起步为 1，每升一档乘 2；<u>服务器数 = credits/小时</u>，两个数字完全相同，记一个就够。</strong></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Size</th><th>服务器/集群</th><th>Credits/小时</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>X-Small</td><td>1</td><td>1</td></tr>
+<tr><td>Small</td><td>2</td><td>2</td></tr>
+<tr><td><strong>Medium</strong></td><td><strong>4</strong></td><td><strong>4</strong></td></tr>
+<tr><td>Large</td><td>8</td><td>8</td></tr>
+<tr><td>X-Large</td><td>16</td><td>16</td></tr>
+<tr><td>2X-Large</td><td>32</td><td>32</td></tr>
+<tr><td>3X-Large</td><td>64</td><td>64</td></tr>
+<tr><td>4X-Large</td><td>128</td><td>128</td></tr>
+</tbody>
+</table>
+<blockquote class="key">
+<p>⚠️ <strong>易错</strong>：不是平方关系，是简单的 2ⁿ，<strong>从 XS = 1 往上数档位</strong>即可。Medium 是第 3 档 → 4，别和 X-Large（16）记串。</p>
+<p><strong>衍生考点</strong>：① 计费按秒，但<strong>最少收 60 秒</strong>；② warehouse 从挂起<strong>恢复时重新开始计费</strong>（又是一次 60 秒起）；③ 多集群总消耗 = <strong>单集群 credits × 运行中的集群数</strong>。</p>
+</blockquote>
+<blockquote class="key">
+<p><strong>★ 只要接受「尺寸 = 节点数量」这一个模型，下面这些都不用背：</strong></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>问题</th><th>推出来的答案</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>大仓库<strong>启动（provision）更慢吗</strong></td><td><strong>可能会</strong>——要向云厂商多要 127 台机器，资源紧张时明显更慢</td></tr>
+<tr><td>每秒 credit 消耗</td><td>机器翻倍 → <strong>烧钱速度翻倍</strong></td></tr>
+<tr><td>本地 SSD 缓存有多大</td><td>机器多 → 缓存总量大；<strong>不能单独配</strong>，尺寸定了缓存就定了</td></tr>
+<tr><td>大仓库一定更贵吗</td><td><strong>不一定</strong>：能完美并行的查询，L 比 M 快一倍、<u>总成本相同</u>；但小查询用大仓库＝纯浪费</td></tr>
+</tbody>
+</table>
+<blockquote class="key core">
+<p><strong>★ 改尺寸不停机；running 的查询扩了也用不上、缩了也不会被抢走；<u>新来的才吃新配置</u>。</strong></p>
+<p><strong>一条原则的两面</strong>：<u>正在执行的语句，永远用它开始时的资源跑到底。</u><br>
+<strong>扩大</strong> → running 查询<u>享受不到</u>新资源（选项说「所有正在跑的查询都受益」→ <strong>False</strong>）；<br>
+<strong>缩小</strong> → running 查询<u>不会被剥夺</u>资源，Snowflake <strong>等它们跑完才移除</strong>那些机器（→ <strong>True</strong>）。</p>
+<p>⚠️ <strong><code>RESIZE</code> 期间 warehouse <u>不会挂起</u>，也谈不上「自动 resume」。</strong>选项写 <code>suspended while the new compute resource is provisioned</code> → <strong>三处都错</strong>。<br>
+<strong>信号词淘汰法：<code>provision</code> / <code>suspended while</code> / <code>wait for</code> / <code>downtime</code> / <code>maintenance window</code> —— 凡暗示「停机等待」的措辞，在 Snowflake 语境下基本都错。</strong>云原生的卖点就是没有停机窗口，计算资源从共享池<u>瞬时</u>分配。</p>
+</blockquote>
+<p><strong>选型口诀</strong>：数据加载→小 warehouse 就够（瓶颈在文件数不在算力）；BI 高并发→多集群；临时复杂分析→大尺寸单集群。</p>
+<h3>存储：Micro-partitions &amp; Clustering</h3>
+<ul>
+<li><strong>Micro-partition</strong>：Snowflake 自动创建，每个 <strong>50–500 MB 未压缩</strong>数据，列式存储，<strong>不可变（immutable）</strong></li>
+<li>每个 micro-partition 的元数据记录：<strong>该分区内所有列</strong>的 <strong>min/max 值</strong>、distinct 数量、NULL 数量，以及行数与未压缩字节数</li>
+<li><strong>Pruning（剪枝）</strong>：查询时靠这些元数据跳过不相关分区 —— 这是 Snowflake 性能的核心机制</li>
+<li><strong>Clustering</strong>：数据天然按加载顺序聚集。表很大（<strong>多 TB</strong>）且查询总按某列过滤时，才考虑定义 <strong>clustering key</strong></li>
+<li><strong>Automatic Clustering</strong> 是后台服务，消耗 credit（serverless），不占用你的 warehouse</li>
+<li><strong>判断是否需要重聚簇</strong>：<code>SYSTEM$CLUSTERING_INFORMATION</code>，看 <code>average_overlaps</code> / <code>average_depth</code>（depth 越小越好）</li>
+</ul>
+<p><strong>别选错</strong>：clustering key 应选<strong>低到中基数</strong>且常用于 WHERE / JOIN 的列。选高基数列（如 UUID）是错误答案。</p>
+<blockquote class="key core">
+<p><strong>★ Pruning 的核心动作是「排除、跳过、不读取」——不是「利用」什么。</strong>查询优化器看每个 micro-partition 的元数据（MIN/MAX），元数据显示这个分区<u>肯定不含</u>符合条件的数据 → 直接<strong>跳过、连读都不读</strong>。选项把这个动作包装成"利用分区重叠"之类的说法 → 方向反了，剪枝要的恰恰是<strong>重叠少</strong>才好剪。</p>
+<p><strong>★ 口诀：聚簇看 TB，小表别折腾。</strong>官方门槛就是 <strong>multi-terabyte</strong>。<br>
+<strong>记不住具体数字时选最大的那个单位——Snowflake 对聚簇的态度一贯是「能不用就不用」。</strong></p>
+<p><strong>为什么门槛高</strong>：Automatic Clustering 后台<strong>持续</strong>烧 credit（serverless）；小表微分区少，本来就剪得动。<strong>收益要盖得过重排的持续成本，这笔账才划算。</strong></p>
+<p>⚠️ <strong>「分区」≠「排序」，两个独立概念别连起来：</strong>默认情况下微分区内数据按<u>写入顺序（natural ingestion order）</u>存放，<strong>不是排序过的</strong>。只有显式设了 Clustering Key，reclustering 才会<u>跨分区把同值行聚到较少的分区里</u>——这是<strong>「让相同值的行少落几个分区」，不是「分区内部排序」</strong>。<u>"数据被切成块" 不代表 "块内数据有序"。</u></p>
+<p>⚠️ <strong>问 "benefits of micro-partition" 时，先把「事实」和「好处」分开</strong>：「不可变」「按写入顺序存」是<u>机制事实</u>，本身不是 benefit；真正的 benefit 是<strong>剪枝更快、免维护索引、支持 Time Travel</strong> 这类<u>因机制而来的结果</u>。选项若把机制原样包装成"好处"（如"数据自动排序"）——<strong>先看它是不是真的（分区不排序），再看它算不算 benefit（就算真，也可能只是事实不是优点）。</strong></p>
+</blockquote>
+<table>
+<thead>
+<tr><th>四条同时满足才建</th><th>说明</th></tr>
+</thead>
+<tbody>
+<tr><td>表在<strong>多 TB</strong> 级别</td><td>硬门槛</td></tr>
+<tr><td>查询经常按某列过滤 / JOIN</td><td>聚簇列要选对，否则白建</td></tr>
+<tr><td><strong>读远多于写</strong></td><td>写多 → 反复重排 → 成本爆炸</td></tr>
+<tr><td>当前剪枝确实差</td><td>先用 <code>SYSTEM$CLUSTERING_INFORMATION</code> 验证，<strong>本来就低就别建</strong></td></tr>
+</tbody>
+</table>
+<ul>
+<li>聚簇列<strong>最多 3–4 列</strong>，再多收益递减、成本上升；<strong>顺序按基数从低到高</strong>（先粗后细）</li>
+<li>高基数列<strong>用表达式降基数</strong>：<code>CLUSTER BY (TO_DATE(ts))</code>，而不是直接用秒级时间戳</li>
+</ul>
+<blockquote class="key core">
+<p><strong>★ 基数是<u>一段区间</u>，两头都排除：<u>极低</u>（M/F、Y/N）❌ · <strong>低到中</strong> ✅ · <u>极高</u>（UUID、秒级时间戳）❌。</strong></p>
+<p><strong>判据：剪枝要「一个值只落在少数分区里，且一个分区只覆盖少数值」。</strong>只有两个值 → <u>几乎每个微分区都同时含 M 和 F</u>，查哪个都得全扫，<strong>剪不掉</strong>；UUID 全唯一 → 排序也无法把范围收紧，且<u>重排成本无穷</u>。<strong>两头失效的机制不同，但结论都是 ❌。</strong></p>
+<table>
+<thead><tr><th>信号</th><th>该加 Clustering Key？</th><th>为什么</th></tr></thead>
+<tbody>
+<tr><td><strong>大表上查询逐渐变慢</strong></td><td><strong>✅ 症状信号</strong></td><td>剪枝效率在下降</td></tr>
+<tr><td><strong>clustering depth 大 / overlaps 多</strong></td><td><strong>✅ 量化信号</strong></td><td>同一个值散落在很多微分区里</td></tr>
+<tr><td>微分区数量<u>少</u></td><td><strong>❌ 正好反了</strong></td><td>分区少 = 表小 = <u>本来就没多少可剪</u>；要<strong>分区多</strong>才值得</td></tr>
+<tr><td>DML 被阻塞 / 等待</td><td><strong>❌ 完全无关</strong></td><td>那是<u>锁竞争</u>，和数据物理排布无关；<strong>加聚簇反而增加后台重排负担</strong></td></tr>
+</tbody>
+</table>
+<p>⚠️ <strong>本题的错法是「记住了相关，记反了方向」。</strong>基数相关 → 误记成「越低越好」；分区数相关 → 误记成「越少越要」。<br>
+<u>解法：每条判据都配一个「为什么」，方向就锁死了</u>——「小表本来就剪得动」这句一想起来，就不可能选「微分区少时用」。<strong>只背结论的知识点，考场上是可以被翻转的。</strong></p>
+</blockquote>
+<blockquote class="key">
+<p><strong>★ 和另外三个性能工具串起来：Clustering 是<u>唯一改变数据物理排列</u>的</strong>，其余三个都是加「外挂结构」或「借算力」。<br>
+<strong>版本差异也是考点</strong>：<u>Clustering 所有版本可用</u>；<strong>SOS / MV / QAS 都要 Enterprise。</strong></p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ 口诀：元数据 —— 全列全分区，自动免费。</strong>「Snowflake 自动为<u>所有</u>微分区的<u>所有</u>列收集元数据」<strong>是 True</strong>。<br>
+⚠️ <strong>这是「绝对化表述」少见的例外</strong>：平时 all / every / always 多半是陷阱，但这条<strong>必须是全覆盖</strong>——没有索引，剪枝全靠元数据，漏一列那列就没法剪枝。<strong>免调优的根基就在这里。</strong></p>
+<p>反过来：看到 <em>“需要手动 ANALYZE / 建索引 / 收集统计信息”</em> → <strong>一定 False</strong>。</p>
+</blockquote>
+<blockquote class="key">
+<p><strong>元数据 vs 聚簇（别混）</strong>：<strong>元数据收集</strong>=自动、全列、无需配置、<strong>免费</strong>，<u>永远存在</u>；<strong>Clustering Key</strong>=手动指定，改变数据在分区间的<u>物理排列</u>，让 MIN/MAX 范围更紧凑。<br>
+<strong>一句话：元数据永远在，聚簇只是让元数据更有效</strong>——没聚簇时分区值域重叠严重，剪枝就差，这正是 <code>average_overlaps</code> 要看的东西。</p>
+</blockquote>
+<h3>表类型</h3>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>Time Travel</th>
+<th>Fail-safe</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Permanent</strong></td>
+<td>0–90 天</td>
+<td><strong>7 天</strong></td>
+<td>默认类型</td>
+</tr>
+<tr>
+<td><strong>Transient</strong></td>
+<td>0–1 天</td>
+<td><strong>无</strong></td>
+<td>省存储成本，适合可重建的数据</td>
+</tr>
+<tr>
+<td><strong>Temporary</strong></td>
+<td>0–1 天</td>
+<td><strong>无</strong></td>
+<td>仅当前会话可见，会话结束即删</td>
+</tr>
+<tr>
+<td><strong>External</strong></td>
+<td>无</td>
+<td>无</td>
+<td>数据在外部 stage，Snowflake 只存元数据；只读</td>
+</tr>
+<tr>
+<td><strong>Iceberg</strong></td>
+<td>有（Snowflake 管理时）</td>
+<td>无</td>
+<td>开放表格式，数据存在你自己的存储桶</td>
+</tr>
+<tr>
+<td><strong>Dynamic</strong></td>
+<td>—</td>
+<td>—</td>
+<td>声明式：定义查询 + TARGET_LAG，Snowflake 自动增量刷新</td>
+</tr>
+</tbody>
+</table>
+<p><strong>记住</strong>：Transient/Temporary <strong>没有 Fail-safe</strong>，这是它们省钱的原因。</p>
+<blockquote class="key core">
+<p><strong>★ 「谁有 Fail-safe」只有一条判据：<u>Snowflake 自己真的存了这份数据，且你为它付了永久存储费</u>。</strong>不看叫不叫 table。</p>
+<table>
+<thead><tr><th>对象</th><th>Fail-safe</th><th>为什么</th></tr></thead>
+<tbody>
+<tr><td><strong>Permanent Table</strong></td><td><strong>✅ 7 天</strong></td><td>真存、全价</td></tr>
+<tr><td><strong>Materialized View</strong></td><td><strong>✅ 7 天</strong></td><td><strong>MV 是「物化」的</strong>——结果<u>真写进微分区</u>，占存储、收存储费，所以 TT + Fail-safe 全套</td></tr>
+<tr><td>Transient Table</td><td>❌</td><td><u>定义</u>就是「放弃 Fail-safe 换低成本」</td></tr>
+<tr><td>Temporary Table</td><td>❌</td><td>会话结束即消失</td></tr>
+<tr><td><strong>External Table</strong></td><td>❌</td><td><strong>Snowflake 一个字节都没存</strong>，只有指向 S3/Blob/GCS 的元数据——<u>没存过，谈何恢复</u></td></tr>
+<tr><td>Iceberg Table</td><td>❌</td><td>同上，数据在你自己的桶里</td></tr>
+</tbody>
+</table>
+<p>⚠️ <strong>陷阱设计：选项里四个都叫 <code>Table</code>，唯一正确的另一半（<code>Materialized View</code>）不叫 table。</strong>一旦在心里把问题窄化成「哪种<u>表</u>受保护」，就必然漏掉它。<u>题干问的是 <code>which objects</code>，别自己加限定词。</u></p>
+<p><strong>连回通用规则</strong>：<code>External</code> 开头的对象一律「数据不在 Snowflake 手里」→ 不收存储费、无 Fail-safe、TT 受限。<u>一个词定三个结论。</u></p>
+</blockquote>
+<h3>视图类型</h3>
+<ul>
+<li><strong>Standard</strong>：只是存了个查询定义，每次执行</li>
+<li><strong>Materialized</strong>：预计算并持久化结果，<strong>自动后台维护（消耗 serverless credit）</strong>，Enterprise+，限制多（只能查单表、不支持 JOIN / UNION / 大部分聚合之外的操作）</li>
+<li><strong>Secure</strong>：隐藏视图定义（<code>GET_DDL</code> 看不到），且<strong>绕过某些查询优化</strong>以防数据泄露 → 因此性能比标准视图差。共享数据时<strong>必须</strong>用 secure view</li>
+</ul>
+<blockquote class="key core">
+<p><strong>★ Secure View 的两个代价，一隐私一性能，成对出现：① 视图定义对非 owner 隐藏（<code>GET_DDL</code> / <code>SHOW VIEWS</code> 看不到 SQL 文本）；② 优化器被限制 → <u>比普通视图慢</u>。</strong></p>
+<p><strong>两者是<u>同一个原因</u>的两面：防止推断出未授权的行。</strong>普通视图会把 WHERE 谓词<u>下推</u>到底层表、会因错误信息/执行顺序泄露被过滤掉的行的存在；Secure View <strong>先做安全过滤再谈优化</strong>，谓词下推和分区裁剪都被削弱——<u>安全是靠「少优化」换来的</u>。</p>
+<p>⚠️ <strong>它<u>不</u>做的事：不加密数据、不做行级/列级策略、不省存储、不改权限模型。</strong>Secure 只管「别让人反推出来」这一件事。<u>要遮列值用 Masking，要限行用 Row Access Policy——见上面的粒度阶梯。</u></p>
+</blockquote>
+<hr />
+</div></details>
+<details class="sec" id="n2"><summary><span class="stitle">Domain 2：账户管理与治理（20%）</span><span class="chev"></span></summary><div class="sbody">
+<h3>RBAC（角色访问控制）</h3>
+<p><strong>核心原则</strong>：权限授予角色，角色授予用户/其他角色。用户不直接拥有权限。</p>
+<p><strong>系统角色层级</strong>（从上到下继承）：</p>
+<pre><code>ORGADMIN            组织层，独立在下面这棵树之外！
+────────────────────────────────────────
+ACCOUNTADMIN        账户内顶层，包含 SYSADMIN + SECURITYADMIN
+├── SECURITYADMIN   管理用户、角色、全局授权（继承 USERADMIN）
+│   └── USERADMIN   创建/管理用户和角色
+└── SYSADMIN        创建/管理数据库、warehouse 等对象
+    └── PUBLIC      默认角色，所有用户自动拥有
+</code></pre>
+<p><strong>最佳实践高频考点</strong>：
+- 自定义角色应授予 <strong>SYSADMIN</strong>，这样 SYSADMIN 才能管理所有对象
+- ACCOUNTADMIN 应<strong>尽量少人拥有</strong>，且必须启用 <strong>MFA</strong>
+- 只有 ACCOUNTADMIN 能看到账单、创建 Resource Monitor、管理 reader account
+- <strong>Secondary roles</strong>：一个会话中可同时激活多个角色的权限（<code>USE SECONDARY ROLES ALL</code>）
+- <strong>Database roles</strong>：作用域限定在某个数据库内，不能授予账户级对象权限，主要用于共享场景（share 里可以包含 database role，用于给消费者做细粒度授权）
+- ⚠️ <strong>Secondary roles 的坑</strong>：激活多个角色只是权限<strong>并集</strong>；<strong>创建对象时 owner 仍然是 primary role</strong>。场景题爱考这一句</p>
+<p><strong>访问对象需要的权限链</strong>：要查一张表，需要 database 的 <code>USAGE</code> + schema 的 <code>USAGE</code> + table 的 <code>SELECT</code> + warehouse 的 <code>USAGE</code>。缺一不可 —— 这是常考的"为什么用户看不到表"。</p>
+<p><strong>Ownership</strong>：每个对象有且仅有一个 owner 角色（DAC 部分）。<code>GRANT OWNERSHIP</code> 可转移。</p>
+<blockquote class="key core">
+<p><strong>★ 建完自定义角色的下一步固定动作：<code>GRANT ROLE &lt;custom&gt; TO ROLE SYSADMIN;</code></strong>——问 <code>after creating a custom role, what should be done</code>，答案永远是这句。</p>
+<p><strong>方向别记反：<code>GRANT ROLE child TO ROLE parent</code>，<u>父继承子</u>。</strong>所以「挂到 SYSADMIN 下」= 把自定义角色 grant <u>给</u> SYSADMIN，不是反过来。<u>被授予的一方是上级。</u></p>
+<p><strong>为什么必须挂</strong>：SYSADMIN 的定位是<u>能管账户内所有对象</u>。不挂 → 自定义角色拥有的对象 SYSADMIN <strong>看不见也管不了</strong>，角色树上出现<u>孤儿分支</u>，只有 ACCOUNTADMIN 能穿透；一旦持有者离职，管理链就断了。<u>挂上去，整棵树重新完整。</u></p>
+<p>⚠️ <strong>时序陷阱：题干写 <code>after creating</code>，那所有描述「创建时该用谁」的选项（如「用 SYSADMIN 创建」）直接出局</strong>——它们不是错答案，是<u>在答另一个问题</u>。<strong>先用题干的时间词筛掉整类选项，再在剩下的做排除法。</strong></p>
+<p>⚠️ <strong>挂给 <code>PUBLIC</code> / 挂给 <code>ACCOUNTADMIN</code> 都是错的</strong>：PUBLIC 人人都有，等于把权限发给全账户；ACCOUNTADMIN 已经继承 SYSADMIN，挂那儿等于绕过正常管理层。</p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ Snowflake 访问控制 = <code>RBAC</code> + <code>DAC</code> 两个模型的混合。</strong>问 <code>which models does Snowflake use</code> → <strong>就这两个</strong>。</p>
+<table>
+<thead><tr><th>模型</th><th>全称</th><th>在 Snowflake 里体现为</th></tr></thead>
+<tbody>
+<tr><td><strong>RBAC</strong></td><td>Role-<u>Based</u></td><td>权限给角色、角色给用户；<strong>用户不直接持权限</strong></td></tr>
+<tr><td><strong>DAC</strong></td><td><u>Discretionary</u>（自由裁量的）</td><td><strong>每个对象有 owner，owner 可自主决定把权限 grant 给谁</strong></td></tr>
+</tbody>
+</table>
+<p><strong>合起来一句话：对象由<u>角色</u>拥有，该角色<u>自主</u>向其他角色授权，用户通过角色获得一切。</strong><u>「角色拥有」是 RBAC 的部分，「自主授权」是 DAC 的部分。</u></p>
+<p>⚠️ <strong><code>IAM</code> / <code>ACL</code> / <code>MAC</code> / <code>ABAC</code> 出现在这类选项里一律排除。</strong><code>IAM</code> 尤其眼熟（AWS 的东西），但它是<u>云厂商的身份服务</u>，不是 Snowflake 的访问控制模型。<u>眼熟不是证据 —— 认得 RBAC 不等于另一个就该选眼熟的。</u></p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ 口诀：用户只借身份，角色才是主人。</strong>权限和所有权<strong>只挂在 role 上</strong>；user 唯一能被授予的东西是 <strong>role 本身</strong>。</p>
+<p><strong>做题技巧</strong>：看到 ownership / privilege 的判断题，<strong>先扫主语宾语是 user 还是 role</strong>，往往不用读懂题意就能判。</p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ 创建账户 = <code>ORGADMIN</code>，不是 ACCOUNTADMIN。</strong>名字有误导性：<strong>ACCOUNTADMIN 是「一个账户<u>内部</u>的最高权限」，不是「管理多个账户的权限」</strong>。</p>
+<p><strong>比喻：总统权力再大也不能创建新国家</strong>——建国是更高一层的事。<code>ORGADMIN</code> 站在 Organization 层，下面挂着 Account A / B / C，每个账户里各有自己的 ACCOUNTADMIN。</p>
+<p>⚠️ <strong><code>ORGADMIN</code> 反过来也够不着账户内的数据对象</strong>（表、schema、warehouse 一律看不到）。这是<strong>刻意的职责分离：ORGADMIN 管行政，ACCOUNTADMIN 管业务</strong>——两边都不是对方的超集。</p>
+<p><strong>信号词</strong>：<code>create an account</code> / <code>across accounts</code> / <code>organization</code> / <code>ORGANIZATION_USAGE</code> → <strong>ORGADMIN</strong>；账单、Resource Monitor、reader account、账户内一切 → <strong>ACCOUNTADMIN</strong>。</p>
+</blockquote>
+<table>
+<thead>
+<tr><th>题干表述</th><th>判断</th></tr>
+</thead>
+<tbody>
+<tr><td>the <strong>user</strong> owns… / ownership transferred to another <strong>user</strong></td><td>❌ False</td></tr>
+<tr><td>privileges granted <strong>directly to a user</strong></td><td>❌ False（权限只能授给 role）</td></tr>
+<tr><td>a <strong>role</strong> granted to a user</td><td>✅ 可以</td></tr>
+<tr><td>the <strong>role</strong> owns… / ownership transferred to another <strong>role</strong></td><td>✅ True</td></tr>
+</tbody>
+</table>
+<h3>认证</h3>
+<ul>
+<li><strong>MFA</strong>：Duo，内置，账户级免费。可用 <code>MINS_TO_BYPASS_MFA</code> 临时绕过</li>
+<li><strong>Federated / SSO</strong>（联合身份验证）：把验证<strong>委托给外部 IdP</strong>（Okta / Azure AD / ADFS / Ping），IdP 验证后发一张 <strong>SAML 2.0 断言</strong>给 Snowflake。好处是<strong>单点登录</strong>：一套账号登所有系统，离职时在 IdP 一关，全部同时失效。<br>
+<strong>★ 先拆词：<code>federated</code> = 「联邦制」= <u>认证权外包给别人</u></strong>。看到这个词就等于看到 <code>SSO</code> / <code>IdP</code> / <code>SAML</code>——<strong>问 <code>the purpose of federated authentication</code>，答案就是 <u>enable SSO</u>，不必再想。</strong><br>
+<strong>角色分工（考题会直接问）</strong>：<u>IdP</u> = Identity Provider（Okta 等，管认证）；<u>Snowflake</u> = <strong>Service Provider (SP)</strong>，只<u>接受</u>断言。<u>Snowflake 永远是 SP，不会是 IdP。</u></li>
+<li><strong>Key-pair</strong>：用于服务账户/自动化，2048-bit RSA，支持轮换（可同时配两个公钥）</li>
+<li><strong>OAuth</strong>：Snowflake OAuth 或 External OAuth</li>
+<li><strong>Network Policy</strong>：IP 白名单/黑名单，<strong>黑名单优先于白名单</strong>。可设在账户级或用户级，用户级优先。</li>
+<li><strong>PrivateLink</strong>（Business Critical 起）：在<strong>你的 VPC 里</strong>建 endpoint，流量走云内网直达 Snowflake，不经公网。<br>
+⚠️ <strong>它连的是 VPC，不是本地机房。</strong>题干出现 <em>“connect from an <u>on-premise</u> data center”</em> → <strong>False</strong>：本地到 VPC 那一段要靠 <strong>Direct Connect / Site-to-Site VPN</strong>，是两段拼起来的，功劳不能全算给 PrivateLink。</li>
+</ul>
+<blockquote class="key core">
+<p><strong>★ SSO 的两个高频 False 陷阱，都在「Snowflake 收到了什么」上：</strong></p>
+<p><strong>① 「Snowflake 接收/存储用户的 <code>credentials</code>（密码）」= False。</strong>IdP 发回来的是 <strong>SAML 断言</strong>——只说「这个人是谁、已验证通过」，<u>不含密码</u>。密码只存在 IdP 一处，这正是 SSO 的安全价值；Snowflake 若真收密码，SSO 就毫无意义。</p>
+<p><strong>② 「SSO 会把用户 <code>load / sync</code> 进 Snowflake」= False。</strong>Snowflake user <strong>必须事先存在</strong>（<code>CREATE USER … LOGIN_NAME='x@company.com'</code>），SSO 只拿断言里的 <code>LOGIN_NAME</code> 去<strong>匹配</strong>；匹配不上就登录失败。<strong>自动建号/停用是 SCIM 干的，和 SSO 是两个独立机制。</strong></p>
+<p><strong>口诀：SSO 只送通行证，不送密码，也不送人 —— 送人的是 SCIM。</strong></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>机制</th><th>干什么</th>
+</tr>
+</thead>
+<tbody>
+<tr><td><strong>SSO / Federated Auth</strong>（SAML 2.0）</td><td>验证<strong>「你是谁」</strong>（authentication），密码留在 IdP</td></tr>
+<tr><td><strong>SCIM</strong></td><td>同步用户与组，<strong>自动创建/停用</strong> Snowflake user（配 Okta / Azure AD）</td></tr>
+</tbody>
+</table>
+<h3>治理功能</h3>
+<ul>
+<li><strong>Dynamic Data Masking</strong>：列级，基于查询者的角色返回脱敏值（masking policy）</li>
+<li><strong>Row Access Policy</strong>：行级，控制哪些行可见</li>
+<li><strong>External Tokenization</strong>（Enterprise 起）：用 masking policy 调<strong>外部厂商的 API</strong>做令牌化 —— 把真实值换成<strong>无意义的替代值</strong>（<code>4111-1111-…</code> → <code>TKN-8x92kd</code>），真值存在外部保险库里。<br>
+⚠️ <strong>与加密的区别：token 和原值<u>没有数学关系</u>，无法反推，只能查保险库还原</strong>；加密则是可用密钥解开。<strong>题干出现「替换成无意义的值 / 外部保险库 / 不可逆推」→ tokenization，不是 encryption。</strong>代表厂商 <strong>Protegrity</strong>（其余同类：ALTR、Baffle）</li>
+<li><strong>Object Tagging</strong>：给对象打标签，可与 masking policy 结合（<strong>tag-based masking</strong>：给标签绑定策略，所有打了此标签的列自动脱敏）</li>
+<li><strong>Data Classification</strong>：自动识别并标记 PII 等敏感列（注意与 object tagging 区分 —— 官方样题就考了这个）</li>
+<li><strong>Access History / Object Dependencies</strong>：数据血缘</li>
+</ul>
+<blockquote class="key core">
+<p><strong>★ 想要「完整可执行的 CREATE 语句」用 <code>GET_DDL</code>；想要「属性列表/摘要信息」用 <code>DESCRIBE</code>（或 <code>SHOW</code>）——题干出现 <em>"see the CREATE definition"</em> 这种字眼，直接锁定 <code>GET_DDL</code>，不用比较其他选项。</strong></p>
+<table>
+<thead><tr><th>命令</th><th>返回什么</th></tr></thead>
+<tbody>
+<tr><td><code>GET_DDL('MASKING POLICY', 'p')</code></td><td>一段<strong>完整、可重新执行</strong>的 <code>CREATE MASKING POLICY ... AS ...</code> SQL 文本</td></tr>
+<tr><td><code>DESCRIBE MASKING POLICY p</code></td><td>一张<strong>属性表</strong>（签名、返回类型、body 表达式等字段），<u>不是可执行 SQL</u></td></tr>
+<tr><td><code>SHOW MASKING POLICIES</code></td><td>账户/schema 下<strong>有哪些策略</strong>的清单，连单个对象的细节都不给</td></tr>
+</tbody>
+</table>
+<p>这条对 view、procedure、task 等大多数对象都成立：<strong><code>GET_DDL</code> = 定义本身，<code>DESCRIBE</code> = 属性拆解，<code>SHOW</code> = 存在性/列表</strong>。<u>题干先确认要哪一层信息，再选命令，不要凭"都能查到这个对象的信息"就三选一乱猜。</u></p>
+</blockquote>
+<h4>易混对比：三种字段级保护<span class="tagx">高频</span></h4>
+<table>
+<thead>
+<tr><th>功能</th><th>何时脱敏</th><th>原值在哪</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>External Tokenization</strong></td><td><strong>加载前</strong>（进 Snowflake 时已是 token）</td><td><strong>外部 token vault</strong></td></tr>
+<tr><td><strong>Dynamic Data Masking</strong></td><td><strong>查询时</strong>（表里存的是明文）</td><td>Snowflake 表内</td></tr>
+<tr><td><strong>Row Access Policy</strong></td><td>查询时<strong>过滤行</strong></td><td>Snowflake 表内</td></tr>
+</tbody>
+</table>
+<p>三者都通过 <strong>policy</strong> 挂到列/表上，都是 <strong>Enterprise 及以上</strong>。</p>
+<blockquote class="key core">
+<p><strong>★ 进门前换牌 = External Tokenization，进门后蒙面 = Dynamic Data Masking。</strong></p>
+<p>看到 <code>before loading</code> + <strong>randomly generated identifier</strong> → <strong>External Tokenization</strong>；看到 <code>query time</code> + 表里是真实数据 → <strong>Dynamic Data Masking</strong>。</p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ 同一列，看人下菜 —— 动态脱敏；同一表，看人分行 —— 行访问策略。</strong></p>
+<table>
+<thead><tr><th>需求信号词</th><th>答案</th></tr></thead>
+<tbody>
+<tr><td>列的值按角色<strong>部分/完全遮蔽</strong></td><td><strong>Dynamic Data Masking</strong></td></tr>
+<tr><td>不同角色<strong>看到不同的行</strong></td><td><strong>Row Access Policy</strong></td></tr>
+<tr><td><strong>隐藏视图定义</strong>、防止逆推底层表</td><td><strong>Secure View</strong></td></tr>
+<tr><td>静态 / 传输中的数据保护</td><td><strong>Encryption</strong>（自动）</td></tr>
+<tr><td><strong>完全不让</strong>某角色碰某对象</td><td><strong>RBAC</strong> <code>GRANT</code> / <code>REVOKE</code></td></tr>
+</tbody>
+</table>
+<p><strong>粒度阶梯：整个对象（RBAC）→ 视图定义（Secure View）→ 行（Row Access）→ 列值（Masking）。</strong>题干问到哪一级就用哪一级，<u>别用大炮打蚊子</u>（"只想遮手机号后四位"不是 REVOKE）。</p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ 自动生效 vs 要你动手：问 <code>automatically</code> / <code>without any configuration</code> 时的分界线。</strong></p>
+<table>
+<thead><tr><th>自动（开箱即用）</th><th>必须显式配置</th></tr></thead>
+<tbody>
+<tr><td><strong>静态+传输中加密</strong>（AES-256，无法关闭）</td><td><strong>Masking Policy</strong>（建策略 + 绑列，两步）</td></tr>
+<tr><td><strong>Time Travel</strong>（默认 1 天）、<strong>Fail-safe</strong>（7 天，不可配）</td><td><strong>Row Access Policy</strong>、<strong>Object Tagging</strong></td></tr>
+<tr><td>微分区划分与元数据统计</td><td><strong>Tri-Secret Secure</strong>、Network Policy、MFA 启用</td></tr>
+<tr><td>Result Cache / 元数据缓存</td><td>Clustering Key、Search Optimization、QAS</td></tr>
+</tbody>
+</table>
+<p><strong>★ 最快的判据：凡是「要选版本」的功能，一律需要配置。</strong>脱敏、行访问、Tri-Secret 都是 Enterprise/Business Critical 起——Snowflake 不会把付费功能默认打开。<strong>反过来，全版本都有的基础保护（加密、TT、Fail-safe）才可能是自动的。</strong></p>
+<p>次判据：<strong>名字里有 <code>policy</code> 的东西没有一个是自动的</strong>——policy 必须先 <code>CREATE</code> 再 <code>ALTER … SET</code> 绑上去。</p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ 同一组 CDP 选项有<u>两根不同的轴</u>，先看题干问的是哪根：<code>不需要配置</code> ≠ <code>额外占存储</code>。</strong></p>
+<table>
+<thead><tr><th></th><th>额外占存储</th><th>为什么</th></tr></thead>
+<tbody>
+<tr><td><strong>Time Travel</strong></td><td><strong>✅ 占</strong></td><td>保留历史版本的微分区</td></tr>
+<tr><td><strong>Fail-safe</strong></td><td><strong>✅ 占</strong></td><td>TT 之后再留 7 天</td></tr>
+<tr><td>Encryption</td><td><strong>❌ 不占</strong></td><td><strong>加密是<u>原地变换</u>，不产生新数据</strong>；AES 是分组密码，密文与明文体积基本一致</td></tr>
+<tr><td>Tri-Secret Secure</td><td><strong>❌ 不占</strong></td><td><strong>它管的是<u>密钥</u>，不是数据</strong>——只是把根密钥换成「客户密钥 + Snowflake 密钥」，几十字节</td></tr>
+<tr><td>Zero-copy Clone</td><td><strong>初始不占</strong></td><td>共享微分区，<u>改动后</u>才产生新分区</td></tr>
+</tbody>
+</table>
+<p><strong>判据：只有「保留了数据的<u>历史副本</u>」才占存储。</strong>加密、密钥管理、权限策略都是对<u>同一份</u>数据做事，一个字节都不多。</p>
+<p>⚠️ <strong>刚做过一道同选项的题时，最容易把上一题的轴带过来。</strong>「自动生效」和「占存储」在这组选项上<u>几乎正交</u>——加密两样都沾一半（自动 ✅、占存储 ❌）。<u>看到熟悉的选项组，先重读一遍问句。</u></p>
+</blockquote>
+<p><strong>技术差异</strong>：External Tokenization 依赖 <strong>External Functions</strong>（要配 API Integration 指向 AWS Lambda / Azure Function），Dynamic Masking 不需要任何外部组件——这是两者最大的实现区别。<br>
+<strong>★ <code>External Function</code> = 在<u>外部执行的函数</u>，不是「从外部取数据」。</strong>它是个 SQL 函数，但<strong>函数体不在 Snowflake 里</strong>——调用时经 <code>API Integration</code> 把参数发给 AWS Lambda / Azure Function，拿返回值当结果。<br>
+⚠️ <strong>「把外部数据搬进来」是 <code>COPY INTO</code> / Snowpipe / External Table 的地盘，和函数无关。</strong><u>function 的语义永远是「算」，不是「搬」。</u><br>
+<strong>判据：<code>external</code> 修饰的是<u>紧跟其后的那个名词</u></strong>——<code>External <u>Function</u></code> → 代码在外部；<code>External <u>Table</u></code> → 数据在外部；<code>External <u>Stage</u></code> → 存储位置在外部。<u>先定名词，再定 external 说的是什么在外面。</u><br>
+<strong>安全含义</strong>：真值从未进入 Snowflake，即便账户被越权访问，拿到的也只是无意义 token。与 <strong>Business Critical → HIPAA/PCI</strong> 是互补的两层：那是<u>平台级</u>加密合规，这是<u>字段级</u>值替换。</p>
+<h4>Logging &amp; Tracing / Alerts &amp; Notifications<span class="tagx">考纲 2.1 · 2.2 点名 · 题库可能还没出到</span></h4>
+<table>
+<thead>
+<tr>
+<th>对象</th><th>干什么</th><th>关键点</th>
+</tr>
+</thead>
+<tbody>
+<tr><td><strong>Event Table</strong></td><td>接收 UDF / 存储过程 / Snowpark 里的<strong>日志（log）和链路（trace）</strong></td><td><strong>是一种特殊的表，账户级只挂一个生效</strong>：<code>ALTER ACCOUNT SET EVENT_TABLE = …</code>。日志量由 <code>LOG_LEVEL</code>、trace 由 <code>TRACE_LEVEL</code> 控制</td></tr>
+<tr><td><strong>Alert</strong></td><td>按 <strong>schedule 跑一个 condition，成立就执行 action</strong></td><td>是 schema 级对象；<strong>要 warehouse 跑</strong>；典型用法是配合下面的 notification 发提醒</td></tr>
+<tr><td><strong>Notification Integration</strong></td><td>把消息发到<strong>外部</strong>（邮件、云消息队列）</td><td>是<strong>账户级 integration 对象</strong>；<code>SYSTEM$SEND_EMAIL</code> 需要它</td></tr>
+</tbody>
+</table>
+<blockquote class="key">
+<p><strong>★ 别混：Access History = 「谁查了哪张表」（审计）；Event Table = 「我的代码打的日志」（可观测性）；Alert = 「条件成立时自动做点什么」。</strong></p>
+</blockquote>
+<h3>加密</h3>
+<ul>
+<li><strong>端到端加密</strong>，静态与传输中全程加密，AES-256</li>
+<li><strong>分层密钥（Hierarchical Key Model）</strong>：Root Key → Account Master Key → Table Master Key → File Key</li>
+<li><strong>密钥轮换</strong>：每 <strong>30 天</strong>自动轮换</li>
+<li><strong>Rekeying</strong>：每年一次对老数据重新加密（需 Enterprise+，需手动开启）</li>
+<li><strong>Tri-Secret Secure</strong>：客户管理密钥 + Snowflake 密钥，<strong>Business Critical</strong> 起</li>
+</ul>
+<h3>成本监控</h3>
+<ul>
+<li><strong>Resource Monitor</strong>：</li>
+<li>只有 <strong>ACCOUNTADMIN</strong> 能创建</li>
+<li>可设在<strong>账户级</strong>（一个）或<strong>warehouse 级</strong></li>
+<li>动作：<strong>Notify</strong>（仅通知）、<strong>Suspend</strong>（挂起，让运行中查询跑完）、<strong>Suspend Immediate</strong>（立即掐断）</li>
+<li>只监控 <strong>warehouse credit</strong>，<strong>不监控存储成本</strong>、不监控 serverless（部分）</li>
+<li>周期：Daily / Weekly / Monthly / Yearly / Never</li>
+</ul>
+<blockquote class="key core">
+<p><strong>★ 官方 action 只有三种，全名要精确：<code>Notify</code> / <code>Notify and Suspend</code> / <code>Notify and Suspend Immediately</code>。</strong>口诀：只通知、缓着停、立刻停。</p>
+<p>⚠️ <strong><code>Alert</code> 是干扰项，不是 Resource Monitor 的 action。</strong>"警报/提醒"这层意思和 <code>Notify</code> 语义相近，但<u>不是官方术语</u>——SnowPro 对术语精确度要求高，同义词干扰项几乎每个 domain 都有。看到没见过的英文词先问"这是不是编出来的近义词"，不要凭中文语感匹配。</p>
+<p>三个动作都基于<strong>百分比阈值</strong>触发（可设多个阈值，如 75% Notify、100% Suspend、110% Suspend Immediately），且<strong>同一个百分比阈值只触发一次对应动作</strong>。</p>
+</blockquote>
+<ul>
+<li><strong>ACCOUNT_USAGE schema</strong>（在 SNOWFLAKE 数据库）：保留 <strong>365 天</strong>历史，有最长 <strong>45 分钟到 3 小时</strong>的延迟，<strong>包含已删除对象</strong></li>
+<li><strong>INFORMATION_SCHEMA</strong>：每个数据库都有，实时无延迟，<strong>只含当前存在的对象</strong>，历史保留 7 天到 6 个月</li>
+</ul>
+<p><strong>这两个的区别几乎必考</strong>：</p>
+<table>
+<thead>
+<tr><th>维度</th><th>INFORMATION_SCHEMA</th><th>ACCOUNT_USAGE</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>作用域</strong></td><td><strong>单个数据库</strong></td><td><strong>整个账户</strong></td></tr>
+<tr><td>保留期</td><td>7 天 ～ 6 个月</td><td><strong>365 天</strong></td></tr>
+<tr><td>延迟</td><td><strong>无（实时）</strong></td><td>45 分钟 ～ 3 小时</td></tr>
+<tr><td>已删除对象</td><td>不显示</td><td><strong>显示</strong>（有 <code>DELETED</code> 列）</td></tr>
+</tbody>
+</table>
+<p><strong>口诀：账户看 ACCOUNT_USAGE，数据库看 INFORMATION_SCHEMA。</strong></p>
+<blockquote class="key core">
+<p><strong>★ <code>SNOWFLAKE</code> 共享库里的 schema 只有三个，按<u>作用域从小到大</u>排：</strong></p>
+<table>
+<thead><tr><th>Schema</th><th>看谁的用量</th></tr></thead>
+<tbody>
+<tr><td><code>ACCOUNT_USAGE</code></td><td><strong>你自己的账户</strong></td></tr>
+<tr><td><code>READER_ACCOUNT_USAGE</code></td><td><strong>你名下所有 Reader Account</strong></td></tr>
+<tr><td><code>ORGANIZATION_USAGE</code></td><td><strong>组织下所有账户</strong>（ORGADMIN）</td></tr>
+</tbody>
+</table>
+<p><strong>★ <code>RESOURCE_MONITORS</code> 视图只在 <code>READER_ACCOUNT_USAGE</code> 里</strong>。<u>为什么偏偏是这边</u>：自己账户的监控随时 <code>SHOW RESOURCE MONITORS</code> 就能看能改，不需要历史视图；<strong>Reader Account 是<u>你付钱、别人用</u></strong>——你必须能审计「给每个 reader 挂了多少额度、他们烧了多少 credit」。<u>这个信息不对称就是这个视图存在的理由。</u></p>
+<p><strong>口诀：自家监控用 <code>SHOW</code>，读者账户查视图。</strong></p>
+<p>⚠️ <strong><code>WAREHOUSE_USAGE</code> 这个 schema 不存在</strong>——把两个熟悉的词拼一起造名是这类题的固定套路（同族：<code>ACCOUNT_USAGE_HISTORY</code>、<code>ACCOUNT_USAGE_METRICS</code>）。<u>判据：问「我在文档里真见过这名字吗」，不是「这名字听起来合不合理」。</u></p>
+</blockquote>
+<h4>常考的 ACCOUNT_USAGE 视图速查</h4>
+<table>
+<thead>
+<tr><th>视图</th><th>用途</th></tr>
+</thead>
+<tbody>
+<tr><td><code>QUERY_HISTORY</code></td><td>每条 SQL 的执行详情、耗时、扫描字节</td></tr>
+<tr><td><code>ACCESS_HISTORY</code></td><td>对象 / <strong>列级</strong>读写血缘 —— ⚠️ <strong>Enterprise+</strong></td></tr>
+<tr><td><code>LOGIN_HISTORY</code></td><td>登录成功 / 失败记录</td></tr>
+<tr><td><code>METERING_HISTORY</code></td><td><strong>账户内所有计费对象</strong>（warehouse + Cloud Services + serverless 功能如 Snowpipe/SOS）的 credit 消耗，<strong>按小时粒度</strong>逐行记录</td></tr>
+<tr><td><code>WAREHOUSE_METERING_HISTORY</code></td><td><strong>只含 warehouse</strong> 消耗的 credit（不含 serverless）</td></tr>
+<tr><td><code>COPY_HISTORY</code></td><td><code>COPY INTO</code> 加载历史（<strong>含 Snowpipe</strong>）</td></tr>
+<tr><td><code>GRANTS_TO_ROLES</code> / <code>GRANTS_TO_USERS</code></td><td>权限授予关系</td></tr>
+<tr><td><code>STORAGE_USAGE</code> / <code>TABLE_STORAGE_METRICS</code></td><td>存储量 —— 详见下一节</td></tr>
+</tbody>
+</table>
+<blockquote class="key core">
+<p><strong>★ 三个 HISTORY 分工：ACCESS 看谁读了什么，LOGIN 看谁进了门，QUERY 看跑了什么 SQL。</strong></p>
+<p>版本记忆:<strong>带 ACCESS 的要企业版</strong>——<code>ACCESS_HISTORY</code> 是 Enterprise+（与 Dynamic Data Masking、External Tokenization 同级）；<code>QUERY_HISTORY</code> / <code>LOGIN_HISTORY</code> <strong>所有版本可用</strong>。</p>
+<p>⚠️ <strong><code>METERING_HISTORY</code> 记的是「按小时的原始用量行」，不是平均值/月度汇总</strong>——每行代表「某个计费对象在某一小时」的 <code>CREDITS_USED</code>（含 <code>CREDITS_USED_COMPUTE</code> / <code>CREDITS_USED_CLOUD_SERVICES</code> 拆分），要汇总（月度/平均）得自己在这张明细表上聚合。<u>它和 <code>WAREHOUSE_METERING_HISTORY</code> 的范围也不同：前者账户内所有计费对象都算（含 serverless），后者只有 warehouse。</u></p>
+</blockquote>
+<h3>存储用量看哪里（视图名必须记准）</h3>
+<blockquote class="key">
+<p><strong>这类题的陷阱有两种</strong>：① 把两个 schema 的视图<strong>互换</strong>；② <strong>直接编一个听起来很合理的名字</strong>（如 <code>ACCOUNT_USAGE_HISTORY</code>、<code>ACCOUNT_USAGE_METRICS</code> —— <strong>都不存在</strong>）。<strong>记准真实视图名是唯一的破解办法</strong>，靠语感一定会中招。</p>
+</blockquote>
+<table>
+<thead>
+<tr><th>想看什么</th><th>去哪里</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>账户级</strong>每日存储</td><td><code>SNOWFLAKE.ACCOUNT_USAGE.<strong>STORAGE_USAGE</strong></code></td></tr>
+<tr><td>按<strong>数据库</strong>拆分</td><td><code>SNOWFLAKE.ACCOUNT_USAGE.<strong>DATABASE_STORAGE_USAGE_HISTORY</strong></code></td></tr>
+<tr><td><strong>Stage</strong> 存储</td><td><code>SNOWFLAKE.ACCOUNT_USAGE.<strong>STAGE_STORAGE_USAGE_HISTORY</strong></code></td></tr>
+<tr><td>按<strong>表</strong>拆分（含 <strong>Time Travel / Fail-safe 占用</strong>）</td><td><code>SNOWFLAKE.ACCOUNT_USAGE.<strong>TABLE_STORAGE_METRICS</strong></code></td></tr>
+</tbody>
+</table>
+<p><strong>UI 里看账户级用量</strong>：Snowsight <strong>Admin → Cost Management / Usage</strong>（经典 UI 是 <strong>Account → Billing &amp; Usage</strong>）。<br>
+⚠️ <strong>Databases 区域不是答案</strong>——那里看的是<strong>单个数据库</strong>的对象和大小，<strong>不是账户级汇总</strong>。</p>
+<blockquote class="key core">
+<p><strong>★ 口诀：库里存表，Stage 存文件，其余都是空架子。</strong>问「哪些对象有 storage information」→ <strong>只有 Database 和（内部）Stage</strong>。</p>
+<p><strong>判据：谁真吃磁盘，谁才有存储用量。</strong>User / Role / Warehouse / <strong>Pipe</strong> / Task / Resource Monitor 全是<u>元数据或指令</u>，字节量可忽略，Snowflake 不向你计存储费。<br>
+⚠️ <strong>Pipe 是重灾区</strong>：它只是一条 <code>COPY INTO</code> 的封装，数据从 <u>Stage 流向 Table</u>，Pipe 只负责触发、<strong>自己不留数据</strong>。<u>不存数据的对象自然没有存储用量。</u></p>
+<p>⚠️ <strong>「在 Information Schema 里存在」≠「提供 storage information」。</strong><code>PIPES</code> 视图确实存在，但里面没有字节数。<u>题目问的是后者，别被「我见过这个视图名」带偏。</u></p>
+<p><strong>Information Schema 侧只有两个存储表函数</strong>：<code>DATABASE_STORAGE_USAGE_HISTORY</code>（含 TT / Fail-safe 字节）和 <code>STAGE_STORAGE_USAGE_HISTORY</code>。<strong>保留 6 个月</strong>；<u>同名的 ACCOUNT_USAGE 视图保留 1 年</u>——<strong>保留期差异是常考点</strong>。</p>
+<p>⚠️ <strong><code>external stage storage usage</code> → 不存在。</strong>外部 stage 的文件在你自己的 S3/Blob/GCS 上，<strong>Snowflake 既不统计也不计费</strong>。</p>
+</blockquote>
+<p><strong>另外记住 <code>TABLE_STORAGE_METRICS</code> 是唯一能看出「Time Travel / Fail-safe 各占多少存储」的地方</strong>——题目问"为什么删了表存储还没降""怎么查 Fail-safe 占用"，答案就是它。</p>
+<hr />
+</div></details>
+<details class="sec" id="n3"><summary><span class="stitle">Domain 3：数据加载与连接（18%）</span><span class="chev"></span></summary><div class="sbody">
+<h3>Stage 类型</h3>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>语法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>User stage</strong></td>
+<td><code>@~</code></td>
+<td>每个用户自动有一个，不能修改属性</td>
+</tr>
+<tr>
+<td><strong>Table stage</strong></td>
+<td><code>@%表名</code></td>
+<td>每张表自动有一个，不能修改，不支持转换</td>
+</tr>
+<tr>
+<td><strong>Named internal stage</strong></td>
+<td><code>@我的stage</code></td>
+<td>推荐，可授权、可配置 file format</td>
+</tr>
+<tr>
+<td><strong>External stage</strong></td>
+<td><code>@我的外部stage</code></td>
+<td>指向 S3 / Azure Blob / GCS</td>
+</tr>
+</tbody>
+</table>
+<blockquote class="key core">
+<p><strong>★ External Stage 只认三种「对象存储」（S3 / Azure Blob / GCS），跟 Snowflake 账户自己部署在哪朵云<u>完全无关</u>——账户在 Azure，external stage 照样能指向 AWS S3 或 GCS。</strong></p>
+<p><strong>判据是「是不是对象存储服务」，不是「跟账户同一朵云」。</strong>普通文件服务器（哪怕挂在 Azure 虚拟机上）、FTP、WebDAV 都是<u>传统文件协议</u>，没有 bucket/blob 概念、没有 REST API，跟对象存储是完全不同的存储范式——不管它挂在哪朵云都不行。</p>
+<p>⚠️ 题干强调"账户部署在 Azure"时要警惕方向性陷阱：<strong>这句话是干扰，不是线索</strong>——它诱导你去选"看起来和 Azure 相关"的选项，但账户所在云从不限制 external stage 能连去哪朵云的对象存储。</p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ <code>@</code> 和 <code>$</code> 各管一件事，别混：<code>@</code> 指向 <u>Stage</u>（文件放哪），<code>$</code> 指向 <u>Variable</u>（变量的值）——两者语义完全不搭界，只是长得都像"特殊标记"。</strong></p>
+<table>
+<thead><tr><th>符号</th><th>管什么</th><th>例子</th></tr></thead>
+<tbody>
+<tr><td><code>@</code></td><td>Stage 标识符：<code>@~</code>（user stage）、<code>@%表名</code>（table stage）、<code>@具名stage</code></td><td><code>SELECT * FROM @my_stage</code></td></tr>
+<tr><td><code>$</code></td><td>变量标识符：session 变量、bind variable、脚本变量</td><td><code>SET my_var=100;</code> 之后 <code>SELECT $my_var;</code></td></tr>
+</tbody>
+</table>
+<p>⚠️ SnowSQL 客户端自己另有一套 <code>&amp;myvar</code> 语法替换变量，<strong>那是 SnowSQL 特有的客户端语法，不是 SQL 层的 <code>$</code></strong>，别混进同一套规则里。</p>
+</blockquote>
+<ul>
+<li>上传到内部 stage 用 <strong>PUT</strong>（只能用 SnowSQL/驱动，<strong>不能在 Snowsight worksheet 里跑</strong>），下载用 <strong>GET</strong></li>
+<li><strong>Storage Integration</strong>：推荐的外部访问方式，不需要在代码里存云凭证</li>
+</ul>
+<h4>Directory Table &amp; 服务端加密（SSE）<span class="tagx">考纲 3.1 点名 · 题库可能还没出到</span></h4>
+<table>
+<thead>
+<tr>
+<th>概念</th><th>要点</th>
+</tr>
+</thead>
+<tbody>
+<tr><td><strong>Directory Table</strong></td><td><strong>不是一种独立的表</strong>，而是 stage 上的一层<u>文件元数据目录</u>（文件名、大小、最后修改时间、<code>FILE_URL</code>）。建 stage 时加 <code>DIRECTORY = (ENABLE = TRUE)</code>，用 <code>SELECT * FROM DIRECTORY(@stage)</code> 查</td></tr>
+<tr><td>用途</td><td><strong>管理非结构化数据（unstructured data）的入口</strong>——先在 directory table 里查到文件，再用 <code>GET_PRESIGNED_URL</code> / scoped URL 访问</td></tr>
+<tr><td>刷新</td><td>不会自动实时更新：<code>ALTER STAGE … REFRESH</code>，或配 <strong>自动刷新（云事件通知）</strong></td></tr>
+<tr><td><strong>Server-side encryption（SSE）</strong></td><td>external stage 上的选项：<code>SNOWFLAKE_SSE</code> / <code>AWS_SSE_S3</code> / <code>AWS_SSE_KMS</code> 等。<strong>只有 SSE 加密的文件，Snowflake 才能生成 scoped URL / presigned URL 让你直接访问</strong>；client-side 加密的不行</td></tr>
+</tbody>
+</table>
+<blockquote class="key">
+<p><strong>★ 「非结构化数据怎么在 Snowflake 里查/给权限？」→ 答案链条是：Stage + Directory Table + URL 函数。</strong>三种 URL：<code>FILE_URL</code>（永久，需权限）· <strong><code>SCOPED_URL</code></strong>（临时，24h，跟当前用户绑定）· <code>PRESIGNED_URL</code>（临时，浏览器可直接开）。</p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ 最高频的一条：<code>PUT</code> / <code>GET</code> 只对 internal stage 有效。</strong>External stage 要用云厂商自己的工具上传下载。</p>
+<p><strong>口诀：PUT 上 GET 下，只走内部台；COPY 双向跑，内外通吃。</strong>（"台" = stage）<br>
+<strong>★ 锚点：永远站在「我自己（本地机器）」的视角说话。</strong><br>
+<code>PUT</code> = <strong>我放东西上去</strong>（往 Snowflake 推）= 上传　|　<code>GET</code> = <strong>我取东西下来</strong>（从 Snowflake 拿）= 下载<br>
+<u>只要视角不换，方向就不会摇摆。</u>（HTTP 直觉是同一回事：PUT 推、GET 取。）题干出现 <code>download … to a local folder</code> → <strong>GET</strong>。<br>
+⚠️ <strong><code>into a stage</code> ≠ <code>into a table</code></strong>：上传到 <u>stage</u> 是 <code>PUT</code>；进 <u>表</u> 才是 <code>COPY INTO</code>。<strong>读到 "into" 先看后面那个词是 stage 还是 table。</strong><br>
+<strong>另一条硬规则:本地与表之间永远不能直连</strong>——<code>COPY</code> 只在 Stage ↔ Table 之间搬，碰不到本地文件系统;<code>SELECT</code> 更不产生本地文件。<strong>Stage 是唯一中转站。</strong></p>
+<p>⚠️ <strong>为什么 Snowsight 跑不了：<code>PUT</code>/<code>GET</code> 要读写<u>你的本地磁盘</u>，而浏览器沙箱不允许 SQL 引擎碰本地文件系统。</strong>→ <strong>只能在客户端里跑：SnowSQL · Snowflake CLI · 各语言 driver / connector。</strong><u>记原因比记结论稳：凡是「命令要碰本地文件」，就一定挑客户端。</u><br>
+⚠️ <strong>「UI 里有上传按钮」≠「UI 能执行 PUT」。</strong>Classic UI / Snowsight 的图形上传走的是<u>另一套 HTTP 上传机制</u>，不是执行 SQL 命令。<strong>题干问 <code>PUT command can be used from which interface</code> 是问<u>命令在哪能跑</u>，不是问「哪里能上传文件」。</strong><u>别用「我见过这个功能」去回答「这个命令能不能跑」。</u></p>
+<p><strong>口诀：内部存储 Snowflake 收，外部只是给个地址 —— 桶是你的，账单也是你的。</strong>External stage 本质只是<strong>指针 + 凭证</strong>（URL、Storage Integration、file format），Snowflake 从未持有那份数据。</p>
+<p>⚠️ 但<strong>计算费照收</strong>：从 external stage 加载时，COPY 用你的 warehouse、Snowpipe 走 serverless。<strong>题干问 “data stored” 时只看存储，别把计算费算进来。</strong></p>
+<p><strong>★ 通用规则：看到 <code>External</code> 开头的对象</strong>（External Stage、External Table、External Volume）<strong>先默念一句「数据不在 Snowflake 手里」</strong>——很多题的答案直接出来（不收存储费、没有 Fail-safe、Time Travel 受限）。</p>
+</blockquote>
+<h4>Stage 文件操作命令全集<span class="tagx">高频</span></h4>
+<table class="core">
+<thead><tr><th>命令</th><th>作用</th><th>Snowsight 可用</th></tr></thead>
+<tbody>
+<tr><td><code>PUT</code></td><td>本地 → Internal Stage（上传）</td><td>❌ 需 SnowSQL/驱动</td></tr>
+<tr><td><code>GET</code></td><td>Internal Stage → 本地（下载）</td><td>❌ 需 SnowSQL/驱动</td></tr>
+<tr><td><code>LIST</code> / <code>LS</code></td><td>列出 stage 上的文件</td><td>✅</td></tr>
+<tr><td><code>REMOVE</code> / <code>RM</code></td><td><strong>删除 stage 上的文件</strong></td><td>✅</td></tr>
+<tr><td><code>COPY INTO</code></td><td>Stage ↔ Table 搬运</td><td>✅</td></tr>
+<tr><td><code>SELECT … FROM @stage</code></td><td>不加载，直接查 stage 上的文件</td><td>✅</td></tr>
+</tbody>
+</table>
+<blockquote class="key core">
+<p><strong>★ 删对象用 <code>DROP</code>，删文件用 <code>REMOVE</code>，加载完自动清用 <code>PURGE = TRUE</code>。</strong></p>
+<p>⚠️ <strong><code>DROP FILE</code> 不存在。</strong><code>DROP</code> 是 DDL，只作用于<u>数据库对象</u>；stage 上的文件不是对象，就是躺在云存储里的文件。<br>
+<code>DROP STAGE my_stage</code> = 删掉整个 stage 对象（连里面文件一起没）；<code>REMOVE @my_stage/path/</code> = 只删文件，stage 还在。</p>
+<p><code>REMOVE @my_stage PATTERN='.*\.csv'</code> 可按正则删。</p>
+<p><strong><code>PURGE = TRUE</code></strong>（<code>COPY INTO</code> 选项，默认 <code>FALSE</code>）：<strong>只在加载成功后</strong>删对应文件；<strong>删除失败不会让 COPY 报错</strong>（尽力而为）。失败残留的文件之后会被 load metadata 去重挡住，不会重复加载。</p>
+<p>⚠️ 陷阱选项：<code>DROP FILE</code>、<code>DELETE LOAD HISTORY</code> 都是编的；<strong>FILE FORMAT 管解析不管删除</strong>。</p>
+<p><strong>★ 同一条分界线也适用于「看」：<code>LIST @stage</code> 看<u>文件</u>，<code>SHOW STAGES</code> 看<u>对象</u>。</strong><br>
+<code>SHOW</code> 后面<strong>永远跟复数的对象类型名</strong>（<code>SHOW TABLES</code> / <code>SHOW STAGES</code> / <code>SHOW WAREHOUSES</code>），<strong>绝不会跟 <code>@</code></strong>——<u>看到 <code>SHOW @…</code> 直接排除</u>。<br>
+<strong>带 <code>@</code> 的命令都是文件级的</strong>：<code>LIST</code> / <code>REMOVE</code> / <code>PUT</code> / <code>GET</code> / <code>SELECT … FROM @stage</code>。</p>
+</blockquote>
+<h4>四个命令的方向（考试爱组合考）</h4>
+<pre><code>本地机器  --PUT--&gt;   Internal Stage  --COPY INTO 表--&gt;    表
+本地机器  &lt;--GET--   Internal Stage  &lt;--COPY INTO stage-- 表
+                    External Stage  --COPY INTO 表--&gt;    表
+</code></pre>
+<table>
+<thead>
+<tr><th>命令</th><th>方向</th><th>关键限制</th></tr>
+</thead>
+<tbody>
+<tr><td><code>PUT</code></td><td>本地 → Internal Stage</td><td rowspan="2"><strong>❌ 不能用于 External Stage</strong>（你没法用 PUT 传到自己的 S3）；<strong>只能在 SnowSQL / driver 里跑，Snowsight 不支持</strong></td></tr>
+<tr><td><code>GET</code></td><td>Internal Stage → 本地</td></tr>
+<tr><td><code>COPY INTO &lt;表&gt;</code></td><td>Stage → 表（<strong>load</strong>）</td><td rowspan="2">Internal / External <strong>都行</strong></td></tr>
+<tr><td><code>COPY INTO &lt;@stage&gt;</code></td><td>表 → Stage（<strong>unload</strong>）</td></tr>
+<tr><td><code>INSERT</code></td><td>Snowflake <u>内部</u>已有的数据 → 表</td><td><strong>读不了 stage 上的文件</strong></td></tr>
+</tbody>
+</table>
+<blockquote class="key">
+<p><strong>★ <code>COPY INTO</code> 是同一个命令的两个方向，靠<u>目标对象</u>区分：</strong><br>
+<code>COPY INTO my_table FROM @stage;</code> = <strong>加载</strong>　|　<code>COPY INTO @stage FROM my_table;</code> = <strong>卸载</strong><br>
+<strong>读题时先看 <code>INTO</code> 后面是表还是 <code>@</code>。</strong></p>
+</blockquote>
+<table>
+<thead>
+<tr><th></th><th>Internal Stage</th><th>External Stage</th></tr>
+</thead>
+<tbody>
+<tr><td>存储位置</td><td>Snowflake 管理的存储</td><td><strong>你自己的</strong> S3 / Azure Blob / GCS</td></tr>
+<tr><td>上传 / 下载</td><td><strong><code>PUT</code> / <code>GET</code></strong></td><td>云厂商工具（<strong>PUT/GET 无效</strong>）</td></tr>
+<tr><td>类型</td><td>User <code>@~</code>、Table <code>@%t</code>、Named <code>@stg</code></td><td><strong>只有 Named</strong></td></tr>
+<tr><td>需要凭证对象</td><td>否</td><td>是（Storage Integration / credentials）</td></tr>
+<tr><td><strong>Snowflake 收存储费吗</strong></td><td><strong>✅ 收</strong>（按标准存储单价计入 Snowflake 账单）</td><td><strong>❌ 不收</strong>——账单来自 AWS/Azure/GCP</td></tr>
+<tr><td>Snowpipe 支持</td><td>✅（REST API 触发）</td><td>✅（auto-ingest + REST API）</td></tr>
+<tr><td><code>DROP STAGE</code> 后文件命运</td><td><strong>文件真的被删</strong>——Snowflake 自己托管的存储，DROP 删的是它真拥有的字节</td><td><strong>文件毫发无损</strong>——stage 只是指向你自己云存储的<u>指针/引用</u>，DROP 只删掉这个指针对象，删不掉别人家（你的云账户）里的文件</td></tr>
+<tr><td>文件享受 Time Travel / Fail-safe 吗</td><td colspan="2"><strong>都不享受</strong>——stage 存的是<u>原始文件</u>（待加载的 CSV/JSON/Parquet），不是表的 micro-partition，TT/Fail-safe 机制只保护表数据，不覆盖 stage</td></tr>
+</tbody>
+</table>
+<blockquote class="key core">
+<p><strong>★ DROP STAGE 的后果只看一条：Snowflake 是不是真的<u>拥有</u>这些字节。</strong>Internal Stage 的文件躺在 Snowflake 自己的存储里，DROP 能删的就是它；External Stage 只是"知道去哪找"的指针，删指针删不掉你自己云账户里的原文件。</p>
+<p>⚠️ <strong>"Snowflake 里的东西都该有 Time Travel"是错的默认假设。</strong>Internal Stage 不是表，不产生 micro-partition 历史版本，<strong>TT/Fail-safe 全都不保护 stage 上的文件</strong>——这条对 Internal/External 都成立，别只想到 External「数据不在 Snowflake 手里」就忽略了 Internal 也没有这层保护。</p>
+</blockquote>
+<h4>数据加载方式全清单（含各自用谁的算力）</h4>
+<table>
+<thead>
+<tr><th>方式</th><th>触发 / 说明</th><th>算力</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>COPY INTO</strong>（bulk）</td><td>从 internal/external stage 批量加载</td><td>你的 <strong>warehouse</strong></td></tr>
+<tr><td><strong>Snowpipe</strong>（auto-ingest）</td><td>云事件通知（S3 SQS / Event Grid / Pub-Sub）</td><td><strong>serverless</strong></td></tr>
+<tr><td><strong>Snowpipe REST API</strong></td><td>客户端调 <code>insertFiles</code> 端点</td><td><strong>serverless</strong></td></tr>
+<tr><td>Snowsight <strong>加载向导</strong></td><td>界面上传小文件（有大小上限）</td><td>你的 <strong>warehouse</strong></td></tr>
+<tr><td><code>INSERT</code> / <code>INSERT INTO SELECT</code></td><td>直接写入</td><td>你的 <strong>warehouse</strong></td></tr>
+<tr><td>外部表 / Iceberg</td><td><strong>不"加载"</strong>，直接查询</td><td>—</td></tr>
+</tbody>
+</table>
+<blockquote class="key core">
+<p>⚠️ <strong>只有 Snowpipe（两种触发方式）是 serverless</strong>，其余全部烧你自己的 warehouse。<strong>"哪个不消耗虚拟仓库"</strong> 这类题就靠这一条。</p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ 文件一落地就要进表 → <u>Snowpipe auto-ingest</u>，不是 Task + <code>COPY</code>。</strong><br>
+<strong>A 是「定时去看有没有活」，D 是「有活了叫我」。</strong></p>
+<table>
+<thead><tr><th></th><th>Task + <code>COPY INTO</code></th><th>Snowpipe auto-ingest</th></tr></thead>
+<tbody>
+<tr><td>触发</td><td><strong>轮询</strong>，按 schedule 醒来</td><td><strong>事件驱动</strong>，文件落地即触发</td></tr>
+<tr><td>计算</td><td>你的 warehouse</td><td><strong>serverless</strong></td></tr>
+<tr><td>计费</td><td>按仓库时间，<strong>最小 60 秒</strong>——每 5 分钟跑一次 = 每天 288 次起步费</td><td>按实际加载量 + 每千文件开销，<strong>无空转</strong></td></tr>
+<tr><td>没新文件时</td><td>照样启仓库、跑 COPY、发现没事干 → <strong>纯浪费</strong></td><td>不触发 → <strong>零成本</strong></td></tr>
+<tr><td>延迟</td><td>最差 = 一整个调度周期</td><td>通常 1 分钟左右</td></tr>
+</tbody>
+</table>
+<p><strong>轮询 vs 事件在成本和延迟上是<u>双赢</u>，所以「MOST efficient / BEST」题里 Snowpipe 赢。</strong>Task + COPY 只在<u>确实需要定时批处理</u>（如每天凌晨对账、要先做转换）时才对。</p>
+<p>⚠️ <strong>读题：题干带 <code>MOST</code> / <code>BEST</code> / <code>most efficient</code> 时，「能用」不等于「最优」。</strong>Task + COPY 技术上完全可行——<u>选项没错，是没读比较级</u>。同 <code>execution plan</code>、<code>available with</code> 那两条，都是<strong>题干限定词决定答案</strong>。</p>
+</blockquote><h3>COPY INTO</h3>
+<ul>
+<li><strong>加载文件大小最佳实践：压缩后 100–250 MB</strong>。太小 → 开销大；太大 → 无法并行且失败重试代价高</li>
+<li>COPY 会记录已加载文件的元数据，<strong>默认 64 天内不会重复加载同一文件</strong>（除非 <code>FORCE = TRUE</code>）</li>
+<li><strong>并行度取决于 warehouse 大小</strong>：每个节点可并行处理约 8 个文件。文件数少于线程数时，加大 warehouse 没用。<strong>★ 目标状态：<u>文件数 ≥ 仓库总线程数</u>，且每个文件 100–250 MB</strong>——两个条件缺一不可。<u>100–250 MB 不是拍脑袋的数：它是「摊薄单文件开销」与「文件数够喂满线程」之间的交点。</u>太小 → 线程都在开关文件而不是搬数据；太大（如 5 GB 单文件）→ <strong>不可拆分，只有一个线程干活，并行度归零</strong></li>
+<li><strong>数据清洁度也是「加载最佳实践」的一部分</strong>：⚠️ <strong>CSV 数值列里带千位逗号（<code>1,234.56</code>）会被解析器当成字段分隔符</strong> → 列错位或类型转换失败。<u>数字要在源头写成 <code>1234.56</code>。</u>同族的还有：日期格式统一、NULL 用统一标记（配 <code>NULL_IF</code>）、字段内含分隔符要加引号（配 <code>FIELD_OPTIONALLY_ENCLOSED_BY</code>）</li>
+<li><strong>「文件太多太小怎么办」→ 在<u>上传 stage 之前</u>合并</strong>；文件太大则先 split。<u>问题在你那侧解决，不是靠 COPY 参数。</u>另配合<strong>按逻辑路径组织 stage 目录</strong>（<code>/年/月/日/</code>）+ COPY 的路径前缀过滤，减少扫描量</li>
+<li><strong>错误处理</strong>：<code>ON_ERROR = CONTINUE | SKIP_FILE | SKIP_FILE_n | ABORT_STATEMENT（默认，批量加载）</code></li>
+<li>Snowpipe 的默认是 <strong>SKIP_FILE</strong></li>
+<li><code>VALIDATION_MODE</code> 用于试跑检查错误而不实际加载</li>
+<li><code>VALIDATE()</code> 函数查看已完成 COPY 的错误</li>
+<li><strong>卸载（unload）</strong>默认生成多个文件；<code>SINGLE = TRUE</code> 强制单文件（有 5 GB 上限）；<code>MAX_FILE_SIZE</code> 控制大小</li>
+</ul>
+<h4>COPY 加载时能做哪些转换（<code>COPY INTO t FROM (SELECT … FROM @stage)</code>）</h4>
+<blockquote class="key core">
+<p><strong>★ 原理一句话（比背清单好使）：COPY 的转换是<u>逐行、无状态</u>的 —— 每行独立处理，不看别的行、不看别的表。</strong></p>
+<p><strong>口诀：COPY 能挑列、能变形，不能筛行、不能连表。</strong></p>
+<p>⚠️ <strong><code>COPY INTO</code> 必须有<u>运行中的 warehouse</u>，credit 记在你账上。</strong>选项写 <code>without requiring a virtual warehouse</code> → <strong>False</strong>。<u>serverless 的是 Snowpipe，不是 COPY。</u><strong>考题最爱把这两者的属性互换。</strong></p>
+<p><strong>★ 载入受限、卸出自由</strong>：反方向的 <code>COPY INTO &lt;location&gt;</code>（卸载）<strong>可以用完整 <code>SELECT</code>，含 JOIN 和聚合</strong>——因为它查的是<u>表</u>，不是 stage。<u>受限的只有「从 stage 读」这个方向。</u></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>支持 ✅</th><th>不支持 ❌</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>列<strong>重排序</strong>（<code>$3, $1</code>）、列<strong>省略</strong></td><td><strong><code>WHERE</code>（过滤行）</strong>——最高频陷阱</td></tr>
+<tr><td><strong>类型转换</strong>（CAST / <code>::</code>）</td><td><code>JOIN</code>（要访问另一张表）</td></tr>
+<tr><td><strong>标量函数</strong>（<code>SUBSTR</code>、<code>TO_DATE</code>…）</td><td><code>GROUP BY</code> / 聚合、窗口函数</td></tr>
+<tr><td>加<strong>常量列</strong>、序列、<code>CURRENT_TIMESTAMP()</code></td><td><code>ORDER BY</code> / <code>LIMIT</code> / <code>DISTINCT</code> / 子查询</td></tr>
+<tr><td><strong>展开 VARIANT 字段</strong>（<code>$1:name</code>）</td><td></td></tr>
+</tbody>
+</table>
+<blockquote class="key">
+<p>⚠️ <strong><code>WHERE</code> 不支持不是 Snowpipe 的特殊限制，是 <code>COPY</code> 语法本身就没有。</strong>要过滤 → <strong>先 COPY 进 staging 表，再 <code>INSERT … SELECT … WHERE</code></strong>（或 Stream + Task）。</p>
+<p>⚠️ <strong>选项里出现 <code>Row level access</code> / <code>Row Access Policy</code> 是答非所问</strong>——那是<u>安全策略</u>（Enterprise），不是<u>数据转换</u>。<strong>看到选项和题干问的是两类不同东西，直接排除，别去判断它对不对。</strong></p>
+</blockquote>
+<h4>VALIDATION_MODE vs ON_ERROR（极高频，选项只差一个词）</h4>
+<blockquote class="key core">
+<p><strong>口诀：VALIDATION = 只体检，不入院。</strong>跑完之后<strong>表里一行数据都没有</strong>，只返回一份「如果真加载会遇到哪些错」的报告。<br>
+想要「<strong>边加载边跳过坏行</strong>」→ 那是 <code>ON_ERROR</code>，不是 VALIDATION_MODE。</p>
+</blockquote>
+<table>
+<thead>
+<tr><th></th><th><code>VALIDATION_MODE</code></th><th><code>ON_ERROR</code></th></tr>
+</thead>
+<tbody>
+<tr><td>会不会加载数据</td><td><strong>完全不加载</strong></td><td><strong>会加载</strong></td></tr>
+<tr><td>用途</td><td>上线前试跑、排查文件问题</td><td>真实加载时的容错策略</td></tr>
+<tr><td>取值</td><td><code>RETURN_ERRORS</code> / <code>RETURN_ALL_ERRORS</code> / <code>RETURN_n_ROWS</code></td><td><code>CONTINUE</code>（跳过坏行）/ <code>SKIP_FILE</code> / <code>ABORT_STATEMENT</code>（默认）</td></tr>
+</tbody>
+</table>
+<blockquote class="key">
+<p>⚠️ <strong>选项只差一个词，看清楚</strong>：<br>
+❌ <em>“<u>while</u> completing the load”</em> = 边加载边校验 → 这是 <code>ON_ERROR = CONTINUE</code><br>
+✅ <em>“<u>without</u> completing the load”</em> = 完全不加载，只报错 → 这才是 VALIDATION_MODE</p>
+</blockquote>
+<table>
+<thead>
+<tr><th>VALIDATION_MODE 取值</th><th>返回什么</th></tr>
+</thead>
+<tbody>
+<tr><td><code>RETURN_n_ROWS</code></td><td><strong>唯一返回数据的</strong>：返回前 n 行（用来预览数据长什么样），遇错即报</td></tr>
+<tr><td><code>RETURN_ERRORS</code></td><td>所有文件中的所有错误</td></tr>
+<tr><td><code>RETURN_ALL_ERRORS</code></td><td>同上，<strong>外加</strong>之前 COPY（<code>ON_ERROR=CONTINUE</code>）跳过的错误行</td></tr>
+</tbody>
+</table>
+<ul>
+<li>VALIDATION_MODE 是 <code>COPY INTO &lt;table&gt;</code> 的参数，<strong>只用于入库</strong>；<code>COPY INTO &lt;location&gt;</code>（卸载）<strong>不支持</strong></li>
+<li>它<strong>与 stage 的 DDL 无关</strong>——创建 stage 时没有这个选项（常见干扰项）</li>
+<li><strong>★ 与<u>带转换的 COPY 互斥</u></strong>：<code>COPY INTO t FROM (SELECT $1, $2::DATE … FROM @stage)</code> 再加 <code>VALIDATION_MODE</code> → <strong>直接报错</strong>。<u>原因：验证模式只「解析文件 + 按目标表结构做类型校验」，而带转换要真正启动一条 SELECT 计算管道——两条执行路径不同，验证模式没有执行表达式的能力。</u><strong>这是本参数唯一的「语句本身报错」情形</strong></li>
+<li>⚠️ <strong>「什么情况下 COPY 会返回错误」这类题，先分清<u>数据层面</u>还是<u>语法/功能层面</u>。</strong>坏行、类型不符、文件重复——那些是 <code>VALIDATION_MODE</code> <u>正常干活</u>（它的职责就是报告数据问题），<strong>不叫「语句返回错误」</strong>。<u>只有功能不兼容才让语句本身失败。</u></li>
+<li>⚠️ <strong>文件名重复不是错误，是设计特性</strong>：COPY 的 load metadata <strong>64 天</strong>内自动跳过同名文件（Snowpipe 是 <strong>14 天</strong>），要重载用 <code>FORCE = TRUE</code>。<u>超过 64 天后同名文件会被<strong>重新加载</strong>——这才是真正的坑。</u></li>
+<li>⚠️ <strong>去重的判定单位是<u>整份文件</u>，不是文件里的某些行/某类数据。</strong>load metadata 记录的是「这个文件名 + 这个 stage 路径」有没有被处理过，<strong>不会去看文件内容是否发生了局部变化</strong>。选项描述"部分新数据/新行"这种<u>行级颗粒度</u>时要警惕——真实机制只在<u>文件级</u>判断加载过没有，读题时把颗粒度先对齐，别被"都在说新数据"这种表面相似带过去。</li>
+<li><strong>三件套的时序</strong>：<code>VALIDATION_MODE</code> = 加载<u>之前</u>预检 · <code>ON_ERROR</code> = 加载<u>当中</u>的容错策略 · <code>VALIDATE()</code> 表函数 = 加载<u>之后</u>回看（<code>SELECT * FROM TABLE(VALIDATE(t, JOB_ID =&gt; '_last'))</code>）。<u>前 / 中 / 后各一个，常被放一起考。</u></li>
+</ul>
+<h3>加载最佳实践（"recommended" 类题目）</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>推荐做法</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>文件大小</td><td>压缩后 <strong>100–250 MB</strong>（<strong>建议，不是硬性限制</strong>）</td></tr>
+<tr><td>文件拆分</td><td>拆成<strong>多个</strong>文件，才能吃满 warehouse 并行度</td></tr>
+<tr><td>反例</td><td>❌ 单个巨大文件（无法并行）　❌ 海量小文件（每文件开销大）</td></tr>
+<tr><td>Warehouse 选型</td><td>加载吞吐主要看<strong>文件数</strong>；文件不够多时，<strong>加大仓库尺寸没用</strong></td></tr>
+<tr><td>Stage 路径</td><td>按 <code>年/月/日/小时</code> 分目录，COPY 时能精准指定前缀</td></tr>
+<tr><td>半结构化</td><td>能拍平的字段<strong>尽量拍平成列</strong>，查询更快</td></tr>
+</tbody>
+</table>
+<blockquote class="key core">
+<p><strong>★ <code>requires</code>（硬性限制）还是 <code>recommends</code>（建议）—— 先分清这个词。</strong>源文件<strong>大小不受任何限制</strong>，Snowflake 自己会切分重组；100–250 MB 只是建议。</p>
+<p><strong>★ 16 MB 是真实数字，但和源文件无关</strong>——这是「真数字放错位置」型陷阱，比编造数字更难识破。</p>
+<p><strong>口诀：16 MB 是分区和 VARIANT 的事，源文件不限大小，只建议 100–250 MB。</strong></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>16 MB 的三个真实归属</th><th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr><td><strong>micro-partition 压缩后大小</strong></td><td>未压缩 50–500 MB，是<u>入库之后</u>的内部组织单位</td></tr>
+<tr><td><strong>VARIANT / OBJECT / ARRAY 单值上限</strong></td><td>一行里一个半结构化字段最大 16 MB（压缩后）</td></tr>
+<tr><td><strong><code>MAX_FILE_SIZE</code> 默认值</strong>（卸载）</td><td><code>COPY INTO &lt;location&gt;</code> 的参数，<strong>16,777,216 字节 = 16 MB</strong>。超过就切成多个文件</td></tr>
+</tbody>
+</table>
+<blockquote class="key core">
+<p><strong>★ 口诀：装货百二五，卸货一十六。</strong></p>
+<p><strong>装载</strong>：建议每个文件 <strong>100–250 MB 压缩后</strong>——这是<u>建议值，不是参数</u>。<br>
+<strong>卸载</strong>：<code>MAX_FILE_SIZE</code> 默认 <strong>16 MB</strong>——这是<u>参数默认值</u>。<br>
+<strong>进大出小，都是为了并行跑得起来。</strong></p>
+<p>⚠️ 干扰项 <strong>5 MB</strong> 是 S3 分段上传的最小分片，与 Snowflake 无关；<strong>5 GB</strong> 才是真数字——<code>SINGLE = TRUE</code> 时的单文件上限。<strong>5 MB / 5 GB 别看混。</strong></p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ 报错 <code>Max LOB size (16777216) exceeded</code> → 答案是 <code>STRIP_OUTER_ARRAY = TRUE</code>，不是拆文件。</strong>（LOB = Large Object，即 VARIANT/OBJECT/ARRAY 的 16 MB 单值上限）</p>
+<p>原因：JSON 文件最外层是一个大数组 <code>[ {...}, {...}, … ]</code> 时，默认<strong>整个数组被当成一行的一个 VARIANT 值</strong>，撑爆 16 MB。<code>STRIP_OUTER_ARRAY = TRUE</code> 剥掉最外层 <code>[ ]</code>，<strong>数组里每个元素变成独立一行</strong>，每行几十字节。</p>
+<p>⚠️ <strong>题干里的"3 GB 大文件"是烟雾弹</strong>：拆到 100 MB 也没用——只要外层数组还在，那一行照样超 16 MB。<strong>拆文件治的是「加载慢/并行度低」，治不了「单值超限」。</strong></p>
+<p><strong>读错误信息先分清是哪种病</strong>：<code>actual size of parsed column</code> 说的是<u>一个列值</u>，与文件大小无关。</p>
+</blockquote>
+<pre><code>COPY INTO SAMPLE FROM @~/SAMPLE.JSON
+  FILE_FORMAT = (TYPE = JSON STRIP_OUTER_ARRAY = TRUE);
+</code></pre>
+<blockquote class="key">
+<p><strong>★ "recommended / best practice" 类题目的通用判据（不止数据加载）</strong>：<br>
+选项是否符合 <strong>OLAP 哲学 —— 批量、列式、大扫描</strong>。<br>
+凡是听起来像 <strong>OLTP 习惯</strong>的做法（频繁小事务、逐行处理、建索引、单条 INSERT），<strong>基本都是错的</strong>。</p>
+</blockquote>
+<h3>支持的文件格式</h3>
+<blockquote class="key core">
+<p><strong>★ 入六出三 —— 出去的只有 CSV、JSON、Parquet；<code>XAO</code>（XML、AVRO、ORC）只进不出。</strong></p>
+<p><strong>为什么：能卸载的三个都是「通用交换格式」</strong>（CSV/JSON 谁都能读，Parquet 是分析生态的通用列存）；<strong>XML / AVRO / ORC 绑定特定生态</strong>（老式系统 / Kafka·Hadoop / Hive），所以只让进不让出。</p>
+</blockquote>
+<table>
+<thead>
+<tr><th>格式</th><th>加载 IN</th><th>卸载 OUT</th></tr>
+</thead>
+<tbody>
+<tr><td>CSV（含分隔符文本）</td><td>✅</td><td>✅</td></tr>
+<tr><td>JSON</td><td>✅</td><td>✅</td></tr>
+<tr><td>Parquet</td><td>✅</td><td>✅</td></tr>
+<tr><td><strong>XML</strong></td><td>✅</td><td><strong>❌</strong></td></tr>
+<tr><td><strong>AVRO</strong></td><td>✅</td><td><strong>❌</strong></td></tr>
+<tr><td><strong>ORC</strong></td><td>✅</td><td><strong>❌</strong></td></tr>
+</tbody>
+</table>
+<blockquote class="key">
+<p><strong>★ 卸载的两个默认值（常和格式一起考）：</strong>默认<strong>自动切成多个文件</strong> → 要单文件设 <code>SINGLE = TRUE</code>（上限 <strong>5 GB</strong>）；默认<strong>自动 gzip 压缩</strong>（<u>指 CSV / JSON</u>）→ 不压缩要设 <code>COMPRESSION = NONE</code>。</p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ 压缩取值<u>按格式分家</u>，Parquet 不认 GZIP。</strong></p>
+<table>
+<thead><tr><th>格式</th><th>卸载默认</th><th>卸载可选值</th></tr></thead>
+<tbody>
+<tr><td><strong>CSV / JSON</strong></td><td><code>GZIP</code></td><td><code>AUTO, GZIP, BZ2, BROTLI, ZSTD, DEFLATE, RAW_DEFLATE, NONE</code></td></tr>
+<tr><td><strong>Parquet</strong></td><td><code>AUTO</code>（= <code>SNAPPY</code>）</td><td><strong><code>AUTO, SNAPPY, LZO, NONE</code> —— 就这四个</strong></td></tr>
+</tbody>
+</table>
+<p><strong>判据：为什么 Parquet 这么少？因为它的压缩<u>内嵌在文件里</u></strong>——列式格式每个 column chunk 各自压缩，只能用 <u>Parquet 规范自己支持的编解码器</u>；CSV/JSON 是<strong>整个文件外层套一个 <code>.gz</code></strong>，套什么都行。<u>「压缩在里面」→ 选项少；「压缩在外面」→ 选项多。</u></p>
+<p>⚠️ <strong>读入宽松、写出严格</strong>：<u>加载</u> Parquet 支持 <code>AUTO/SNAPPY/GZIP/BROTLI/ZSTD/LZO/NONE</code>（宽），<u>卸载</u>只有四个（窄）。<strong>题干先看是 load 还是 unload——这是本考点最常设的陷阱。</strong></p>
+<p>⚠️ <code>GZIP</code> 最眼熟、又确实是 Snowflake 多处的默认值，<strong>所以它是这题的标准诱饵</strong>。<u>「最常见的那个」不等于「这个格式允许的那个」。</u></p>
+<p><strong>★ 卸载的「最佳实践」题选<u>显式指定 named file format</u></strong>（<code>FILE_FORMAT = (FORMAT_NAME = 'my_fmt')</code>），理由是：卸载与日后重新加载<strong>共用同一份格式定义</strong>（往返一致）、可复用、<strong>避免默认值意外</strong>（默认 CSV 是逗号分隔）、格式变更集中一处。<u>这是普适建议，所以在"哪个是 best practice"里通常就是它。</u></p>
+</blockquote>
+<h3>半结构化数据</h3>
+<blockquote class="key core">
+<p><strong>★ 半结构化类型只有三兄弟：<code>VARIANT</code>（万能容器，可装任何类型，含 OBJECT/ARRAY 本身）· <code>OBJECT</code>（键值对，JSON 的 <code>{}</code>）· <code>ARRAY</code>（有序列表，JSON 的 <code>[]</code>）。就这三个。</strong></p>
+<p>⚠️ <strong><code>VARCHAR</code> 是结构化类型，不在其中。</strong>你可以把一段 JSON <u>文本</u>塞进 VARCHAR，但它就只是一坨字符串——<strong>不能用 <code>:</code> 路径语法查</strong>，得先 <code>PARSE_JSON</code> 变成 VARIANT。<u>「能装 JSON」≠「是半结构化类型」。</u></p>
+<p><strong>判据：能不能用 <code>:</code> 取字段。</strong>能 → 半结构化；不能 → 只是字符串。<code>TEXT</code> / <code>STRING</code> / <code>BINARY</code> 出现在这类选项里一律排除。</p>
+</blockquote>
+<ul>
+<li><strong>VARIANT</strong> 类型，单个值上限 <strong>16 MB</strong>（压缩后）</li>
+<li>用 <code>:</code> 取字段（<code>src:name</code>），<code>::</code> 转类型</li>
+<li><strong>FLATTEN / LATERAL FLATTEN</strong> 把数组展开成行</li>
+<li>Snowflake 会自动为 VARIANT 中的重复字段提取元数据以提升查询性能</li>
+<li><strong>其余工具</strong>：<code>PARSE_JSON</code>（字符串→VARIANT）、<code>TRY_PARSE_JSON</code>（安全解析）、<code>GET_PATH</code>（安全取值）、<code>OBJECT_CONSTRUCT</code> / <code>ARRAY_AGG</code>（反向：行→嵌套）</li>
+</ul>
+<h4>FLATTEN（table function）</h4>
+<blockquote class="key core">
+<p><strong>★ 先 <code>PARSE_JSON</code> 再 <code>FLATTEN</code>，这是两步不是一步。</strong></p>
+<pre><code>字符串 '{"a":[1,2]}'
+   ↓ PARSE_JSON()      字符串 → VARIANT（一进一出，不产生新行）
+VARIANT
+   ↓ LATERAL FLATTEN() VARIANT → 多行（产生行）
+</code></pre>
+<p><strong><code>FLATTEN</code> 的输入必须<u>已经是</u> VARIANT，它不吃字符串。</strong>题干出现 <code>interpret an input string</code> / <code>produce a VARIANT value</code> → <strong><code>PARSE_JSON</code></strong>；出现 <code>expand into rows</code> / <code>one row per element</code> → <strong><code>FLATTEN</code></strong>。</p>
+</blockquote>
+<blockquote class="key">
+<p><strong>口诀：FLATTEN = 把「一格里的一串」变成「一串行」。</strong>一个订单里 3 个商品 → 变成 3 行。</p>
+<p>（题库若纠结「半结构化 vs 结构化类型都能不能 FLATTEN」——<strong>考纲没有这一层，是题库自己的问题，不用记</strong>。答案是都可以。）</p>
+</blockquote>
+<pre><code>SELECT t.id, f.value:name::STRING AS item_name
+FROM orders t,
+     LATERAL FLATTEN(input =&gt; t.items) f;</code></pre>
+<ul>
+<li>参数里<strong>只需记 <code>OUTER</code></strong>——见下条</li>
+</ul>
+<blockquote class="key core">
+<p><strong>★ FLATTEN 的输出列固定就 6 个，必须能逐个认出：<code>SEQ · KEY · PATH · INDEX · VALUE · THIS</code></strong>（考过挑选项，光记 VALUE 不够）。</p>
+</blockquote>
+<table>
+<thead>
+<tr><th>列</th><th>含义</th></tr>
+</thead>
+<tbody>
+<tr><td><code>SEQ</code></td><td>输入行的序号（<strong>同一输入行展开出的多行共享同一个 SEQ</strong>）</td></tr>
+<tr><td><code>KEY</code></td><td>展开 <strong>OBJECT</strong> 时的键名；展开 ARRAY 时为 <strong>NULL</strong></td></tr>
+<tr><td><code>PATH</code></td><td>到该元素的<strong>路径表达式</strong>，如 <code>data[0].name</code></td></tr>
+<tr><td><code>INDEX</code></td><td>展开 <strong>ARRAY</strong> 时的下标（<strong>从 0 开始</strong>）；展开 OBJECT 时为 <strong>NULL</strong></td></tr>
+<tr><td><code>VALUE</code></td><td>该元素的实际值（VARIANT）—— <strong>最常用</strong></td></tr>
+<tr><td><code>THIS</code></td><td>当前正在被展开的<strong>父级元素本身</strong></td></tr>
+</tbody>
+</table>
+<p><strong>KEY 给对象、INDEX 给数组，两者互斥,必有一个是 NULL。</strong></p>
+<ul>
+<li>参数里<strong>只需记 <code>OUTER</code></strong>（默认 FALSE）：<strong>空集合时那一行会直接消失</strong>，设 TRUE 才保留、VALUE 填 NULL。其余 PATH / RECURSIVE / MODE 认得出即可</li>
+</ul>
+<h3>自动化摄取</h3>
+<ul>
+<li><strong>Snowpipe</strong>：serverless，微批。基于云事件通知（S3 Event / Azure Event Grid / GCS Pub-Sub）或 REST API 触发。<strong>按实际计算量计费</strong>（含每千文件的开销费），不占用你的 warehouse。延迟通常 <strong>1 分钟左右</strong>，不适合真正的实时</li>
+<li><strong>Snowpipe Streaming</strong>：行级直写，低延迟，无需先落文件</li>
+</ul>
+<blockquote class="key">
+<p><strong>★ Snowpipe 的计费粒度：per-second / per-core。</strong>后台用 Snowflake 自己管理的资源，计量单位是<strong>核</strong>（不是 XS/S/M 这种 warehouse size），按<strong>秒</strong>计费、<strong>没有 60 秒起步</strong>。另有每 <strong>1000 个文件</strong>的固定管理费——<strong>文件太碎会让这笔变贵</strong>。</p>
+<p><strong>口诀：Snowpipe 无仓库 → 按核按秒；手动 COPY 用仓库 → 按尺寸，60 秒起。</strong></p>
+</blockquote>
+<table>
+<thead>
+<tr><th></th><th>时间粒度</th><th>资源粒度</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Snowpipe</strong>（serverless）</td><td>秒</td><td><strong>核 (core)</strong></td></tr>
+<tr><td>自己的 virtual warehouse</td><td>秒，但<strong>最低 60 秒</strong></td><td><strong>整个仓库</strong>（XS/S/M…）</td></tr>
+</tbody>
+</table>
+<blockquote class="key">
+<p><strong>★ 一条通用规则：凡「serverless」类功能</strong>——Snowpipe、Serverless Task、Automatic Clustering、Search Optimization 后台维护、MV 后台刷新——<strong>一律是 Snowflake 管理的计算资源、按秒计费、不占用你的 warehouse</strong>。<br>
+排除法：题干说「按 warehouse 大小」「最低 60 秒」→ 那是<strong>普通 warehouse / 手动 COPY</strong>；说「pipe 个数」「存储桶大小」→ 都与加载费<strong>无关</strong>。</p>
+<p><strong>推论：<code>CREATE PIPE</code> 语法里根本没有 <code>WAREHOUSE =</code> 参数。</strong>凡是 <em>“requires a virtual warehouse”</em> + serverless 功能 → <strong>False</strong>。<strong>口诀：Pipe 无仓，COPY 有仓。</strong></p>
+<p>⚠️ <strong><code>dedicated</code>（专用的）是这里的陷阱词</strong>：问「是否需要一个 <u>dedicated</u> warehouse」会诱导你想「那共享一个总行吧」，从而掉进「总之要仓库」。<strong>正确的否定要深一层：不是「不需要专用的」，而是「完全不需要任何 warehouse」。</strong></p>
+<p><strong>★ 更强的一条推论：serverless 的尺寸<u>你设不了</u>。</strong>Snowflake 按实际工作量自动伸缩——<strong>凡是"让用户设 serverless 尺寸"的选项，一律排除</strong>，因为能设尺寸就不叫 serverless 了。<code>SERVERLESS_FEATURES_SIZE</code> 这类参数<strong>不存在</strong>。</p>
+<p>⚠️ 唯一的例外别记混：<strong>Serverless Task</strong> 可以给一个<u>初始</u>规模提示 <code>USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE</code>——那只是<strong>起点建议，之后仍由 Snowflake 自动调整</strong>，不是"你来定尺寸"。</p>
+</blockquote>
+<ul>
+<li><strong>Stream</strong>：CDC，记录表的变更（INSERT/UPDATE/DELETE）。是"偏移量指针"不是数据副本。消费（DML 中读取）后自动前进</li>
+<li>类型：Standard（含所有变更）、Append-only（仅插入，开销更小）、Insert-only（外部表用）</li>
+<li><strong>Task</strong>：调度 SQL，可用 CRON 或 interval。可串成 <strong>DAG</strong>（一个 root task + 子 task，最多 1000 个）。可用 warehouse 或 serverless。<br>
+<strong>★ 一个 Task = <u>一条 SQL 语句</u> + 一个调度。<code>AS</code> 后面只能跟单条语句</strong>，选项写 <code>a set of SQL statements</code> / <code>multiple statements</code> → <strong>False</strong>。<br>
+想跑多条只有两条路，<u>而这两条恰恰反证了「Task 的容量就是一条」</u>：<strong>① 包成存储过程</strong>（<code>CREATE TASK t AS CALL my_proc();</code>——过程内部几十条，对 Task 仍是一次 <code>CALL</code>）；<strong>② 建 DAG</strong>（<code>CREATE TASK t2 AFTER t1 AS …</code>——多个 Task 串起来，每个仍是单语句）</li>
+<li><strong>经典组合</strong>：Stream + Task 实现增量 ELT 管道</li>
+<li><strong>Dynamic Table</strong>：上面那套的声明式替代 —— 你只写目标查询和 <code>TARGET_LAG</code>，Snowflake 自动增量刷新</li>
+</ul>
+<blockquote class="key">
+<p><strong>★ 考点：Snowpipe 靠 load history <u>按文件名</u>去重</strong>——加载过的文件名记下来，再遇到同名就跳过。<br>
+<strong><code>CREATE OR REPLACE PIPE</code> 会把 load history 清空</strong> → 如果 stage 里旧文件还在、又被重新通知或 <code>REFRESH</code>，<strong>会全部重新加载 → 数据重复</strong>。<br>
+<strong>正确说法是 “previously loaded files <u>may be reloaded</u>”，不是 “will be ignored”</strong>（把因果反过来是常见干扰项）。</p>
+<p><strong>口诀：重建 Pipe，历史归零，旧文件可能再来一遍。</strong></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>Snowpipe load history 保留期</td><td><strong>14 天</strong></td></tr>
+<tr><td>COPY（非 Pipe）load history 保留期</td><td><strong>64 天</strong></td></tr>
+<tr><td><code>ALTER PIPE … REFRESH</code> 能捞回的文件时间窗</td><td>stage 中<strong>最近 7 天</strong>的文件</td></tr>
+<tr><td>查询视图</td><td><code>ACCOUNT_USAGE.COPY_HISTORY</code> / <code>INFORMATION_SCHEMA.COPY_HISTORY</code></td></tr>
+</tbody>
+</table>
+<ul>
+<li><code>ALTER PIPE … REFRESH</code> 的用途是<strong>手动补捞漏掉的文件</strong>（如云通知中断那段时间），它<strong>只加载 load history 里没有的文件</strong></li>
+<li>但 history 刚被 REPLACE 清空时，REFRESH 会把 <strong>7 天内的文件全灌一遍</strong>——这两点<strong>合起来正是这类题的干扰项设计思路</strong></li>
+<li>安全做法：能用 <code>ALTER PIPE</code> 就别 <code>CREATE OR REPLACE</code>；必须重建时，先把 stage 里的旧文件归档移走，且重建后<strong>不要</strong>执行 REFRESH</li>
+</ul>
+<blockquote class="key">
+<p><strong>Stream + Task 与 Dynamic Table 的完整对照表、提示词表在「Domain 6：C03 新增内容」第 6 条</strong>（能不能 DML、谁触发刷新、题干关键词）。<strong>这是 Domain 3 的高频二选一，别只在这里看一眼就过</strong>——考纲把 Streams/Tasks/Dynamic Tables 都归在 3.2。</p>
+</blockquote>
+<h3>连接</h3>
+<ul>
+<li><strong>Web UI</strong>：Snowsight（现行）、Classic Console（旧版）</li>
+<li><strong>Drivers</strong>：JDBC、ODBC、Python、Node.js、Go、.NET、PHP</li>
+<li><strong>Connectors</strong>：Spark、Kafka、Python</li>
+<li><strong>SnowSQL</strong>：CLI（另有较新的 <strong>Snowflake CLI</strong>）</li>
+<li><strong>REST API</strong>：SQL API 等</li>
+<li><strong>Integration 对象</strong>：Storage（云存储）、API（外部函数）、Notification、Security（OAuth/External OAuth）、Git</li>
+</ul>
+<blockquote class="key">
+<p>⚠️ <strong>「支持什么」≠「Downloads 页面能下到什么」。</strong>UI 的 Downloads 区分发的是<strong>要装到本机的可执行程序 / 系统级驱动</strong>：<strong>SnowSQL</strong>、<strong>ODBC</strong>（Win/mac/Linux 各一份）。<br>
+<strong>JDBC 和各语言 connector 走包管理器</strong>（Maven Central、pip 等），UI 只给链接不给包。</p>
+<p><strong>判据：要不要「装」——装到操作系统里的才出现在 Downloads；作为项目依赖引入的不出现。</strong></p>
+<p>⚠️ 假选项：<strong>没有 Hive connector</strong>（真的是 Spark / Kafka）；<strong>Scala 是语言不是 connector</strong>（Scala 支持走 Snowpark for Scala，Maven 依赖）。</p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ 名字像不代表查的对象一样：<code>CURRENT_CLIENT()</code> 查的是你用什么工具连进来，<code>CURRENT_VERSION()</code> 查的是 Snowflake 服务端自己的版本，两者无关。</strong></p>
+<table>
+<thead><tr><th>函数</th><th>返回什么</th></tr></thead>
+<tbody>
+<tr><td><code>CURRENT_CLIENT()</code></td><td>连接客户端/驱动的<strong>名称+版本</strong>，如 <code>"Go 1.6.22"</code>、<code>"JDBC 3.13.30"</code>——不管用 Web UI、SnowSQL 还是各语言驱动连进来都能识别</td></tr>
+<tr><td><code>CURRENT_VERSION()</code></td><td>Snowflake<strong>后台系统本身</strong>的版本号，如 <code>"8.20.1"</code>，跟你用什么客户端连接<u>完全无关</u></td></tr>
+<tr><td><code>CURRENT_USER()</code></td><td>当前用户</td></tr>
+<tr><td><code>CURRENT_ROLE()</code></td><td>当前角色</td></tr>
+<tr><td><code>CURRENT_WAREHOUSE()</code></td><td>当前仓库</td></tr>
+<tr><td><code>CURRENT_SESSION()</code></td><td>当前会话 ID</td></tr>
+</tbody>
+</table>
+<p>⚠️ <strong>一整套 <code>CURRENT_XXX()</code> 系统函数各查各的对象，考试爱在名字相近的几个之间设陷阱</strong>——看到 <code>CURRENT_CLIENT</code> / <code>CURRENT_VERSION</code> 这类词形接近的函数名，先把「查的是客户端」还是「查的是服务端」问清楚，别凭字面感觉选。</p>
+</blockquote>
+<blockquote class="key">
+<p><strong>★ 考点：多种客户端接口是<u>并行可用</u>的，不互斥。</strong>同一个用户/账户可以同时用 Snowsight、SnowSQL、驱动、连接器、REST API，<strong>不需要向 Snowflake Support 申请开通</strong>。</p>
+<p><strong>能做什么由「用户的角色和权限（RBAC）」决定，不由「用哪个客户端」决定</strong>——同一个查询用 UI 跑和用 SnowSQL 跑，结果和权限判定完全一样。</p>
+<p><strong>口诀：接口任选，权限说话。</strong></p>
+<p>⚠️ <strong>由此引出一类高频 False 陷阱</strong>：题干出现 <em>“unless explicitly granted by Support”</em> / <em>“must contact Snowflake Support to enable”</em>，<strong>绝大多数是错的</strong>。真正需要联系 Support 的场景很少，典型只有<strong>账户级特性开通（某些预览功能）、Tri-Secret Secure、PrivateLink 配置</strong>等——<strong>日常访问方式完全不在此列</strong>。</p>
+<p><strong>但注意别过度推广</strong>：接口平权说的是<strong>「能不能连、权限一不一样」</strong>，不是<strong>「功能完全等价」</strong>。仍有命令挑客户端，最典型的就是 <strong><code>PUT</code> / <code>GET</code> 不能在 Snowsight worksheet 里跑，只能用 SnowSQL 或驱动</strong>（见 Domain 3 加载部分）。</p>
+</blockquote>
+<hr />
+</div></details>
+<details class="sec" id="n4"><summary><span class="stitle">Domain 4：性能优化与查询（21%）</span><span class="chev"></span></summary><div class="sbody">
+<h3>三种缓存（必考）</h3>
+<table>
+<thead>
+<tr>
+<th>缓存</th>
+<th>位置</th>
+<th>存活时间</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Metadata cache</strong></td>
+<td>Cloud Services</td>
+<td>一直有</td>
+<td>让 <code>SELECT COUNT(*)</code>、<code>MIN/MAX</code> 等<strong>不启动 warehouse</strong>就能返回</td>
+</tr>
+<tr>
+<td><strong>Query Result cache</strong></td>
+<td>Cloud Services</td>
+<td><strong>24 小时</strong>，被复用则续期，最长 <strong>31 天</strong></td>
+<td>需要 SQL 文本完全一致、底层数据未变、不含非确定性函数（如 <code>CURRENT_TIMESTAMP</code>）。<strong>任何用户</strong>只要有权限都能命中，且<strong>完全不消耗 credit</strong></td>
+</tr>
+<tr>
+<td><strong>Warehouse (local disk) cache</strong></td>
+<td>Compute 节点 SSD</td>
+<td>warehouse <strong>挂起即清空</strong></td>
+<td>缓存查询用到的 micro-partition 数据。<strong>容量正比于 warehouse 尺寸</strong>（尺寸 = 节点数 = SSD 总量）；<strong>缩小尺寸 → 节点被移除 → 那部分缓存随之消失</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>高频陷阱</strong>：结果缓存命中 = 零 credit + 不需要 warehouse 运行。<code>USE_CACHED_RESULT = FALSE</code> 可关闭（测试用）。</p>
+<blockquote class="key core">
+<p><strong>★ 判据只有一条：这个操作要不要碰<u>物理数据字节</u>？不碰 → 不要 warehouse；要读/写/算数据本身 → 要。</strong></p>
+<p><strong>DDL 不要仓的原因：表结构信息全在 Cloud Services 层的元数据里。</strong><code>ALTER TABLE ADD COLUMN</code> 只是往元数据加一行描述，已有 micro-partition <u>一个字节都没被改动</u>——这和 Zero-Copy Clone 能瞬间完成是<strong>同一个原理（存算分离，元数据操作与数据操作分离）</strong>。<br>
+⚠️ <strong>唯一例外</strong>：<code>ALTER TABLE ... CLUSTER BY</code> 触发的 reclustering 是 <strong>serverless</strong>（不占你的 warehouse，但单独计费）——它动的是物理排布，不是纯元数据操作。</p>
+<table>
+<thead><tr><th>免仓库（元数据/搬运层）</th><th>要仓库（数据本体层）</th></tr></thead>
+<tbody>
+<tr><td>所有 DDL：<code>CREATE / ALTER / DROP / DESCRIBE / SHOW</code></td><td><code>SELECT</code>（含 MV、外部表）</td></tr>
+<tr><td><code>PUT / GET / LIST / REMOVE</code>（只搬文件，不解析内容）</td><td><code>COPY INTO</code>（要解析文件、按列写入 micro-partition）</td></tr>
+<tr><td>元数据查询：<code>COUNT(*)</code>、<code>MIN/MAX(col)</code></td><td>DML：<code>INSERT / UPDATE / DELETE / MERGE</code></td></tr>
+<tr><td>Result Cache 命中、<code>INFORMATION_SCHEMA</code></td><td>存储过程、UDF 执行、<code>CTAS</code></td></tr>
+</tbody>
+</table>
+<p><strong>口诀：改结构不要仓，搬文件不要仓；查数据要仓，跑逻辑要仓。</strong>再细分一句：<strong>PUT/GET 只搬箱，COPY 才拆箱</strong>——拆箱（解析数据）才要人手（warehouse）。</p>
+<p>⚠️ <strong>建表三兄弟，按"碰不碰数据行"排序：</strong></p>
+<table>
+<thead><tr><th>语句</th><th>复制什么</th><th>要不要仓库</th></tr></thead>
+<tbody>
+<tr><td><code>CREATE TABLE B LIKE A</code></td><td>只复制结构（列/类型/约束），<strong>B 是空表</strong></td><td>❌ 不要——从 A 的元数据"抄"定义，全程不读 A 的数据行</td></tr>
+<tr><td><code>CREATE TABLE B CLONE A</code>（Zero-Copy Clone）</td><td>结构 + 数据，但<strong>靠 micro-partition 元数据指针</strong>，不复制实际存储</td><td>❌ 不要——瞬间完成，同一原理</td></tr>
+<tr><td><code>CREATE TABLE B AS SELECT * FROM A</code>（CTAS）</td><td>结构 + 数据，<strong>真的读 A 的数据行再写入 B</strong></td><td>✅ 要——本质是一条 <code>SELECT</code></td></tr>
+</tbody>
+</table>
+<p><u>LIKE 和 CLONE 表面上都"瞬间建表"，但别混：LIKE 建的是空表（只抄结构），CLONE 建的是有数据的表（抄结构+数据指针）——两者要不要仓库的答案一样，但"复制了什么"完全不同，题干问后者时不能用前者的理由答。</u></p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ Result Cache 命中的完整条件（七条）：</strong></p>
+<ol>
+<li><strong>SQL 文本逐字符一致</strong>（大小写、空格、注释都算）</li>
+<li><strong>底层表数据未变</strong>（无 DML、无 reclustering）。<strong>★ 失效粒度是「表 / 微分区」，不是「列」</strong>——改了 <code>note</code> 列，<code>SELECT id, amount</code> 的缓存<u>照样失效</u>。因为微分区<strong>不可变</strong>：<code>UPDATE</code> 会作废整个旧分区、重写一个含<u>所有列</u>的新分区，缓存所依赖的分区前提就不成立了。Snowflake <strong>不会去比对新旧分区在那几列上是否一样</strong>（逐值比对比重跑还贵），一律保守作废。<u>记：Snowflake 追踪的是「表版本」，不是「列版本」。</u></li>
+<li><strong>不含非确定性函数</strong></li>
+<li>不含外部函数 / 外部表 / 非确定的 UDF</li>
+<li>在 <strong>24 小时</strong>内（每次命中重置，累计上限 <strong>31 天</strong>）</li>
+<li>使用者对所有底层表<strong>有权限</strong></li>
+<li><code>USE_CACHED_RESULT = TRUE</code>（默认开）</li>
+</ol>
+<p>⚠️ <strong>方向别说反：<u>确定性</u>函数是缓存能用的<u>前提</u>，<u>非确定性</u>才是障碍。</strong>选项写 <code>deterministic function prevents caching</code> → <strong>错</strong>。<br>
+破坏缓存的是 <code>CURRENT_TIMESTAMP()</code>、<code>CURRENT_DATE()</code>、<code>RANDOM()</code>——每次<u>本来就该</u>给新值，缓存了才是 bug。<br>
+<code>SUM()</code>、<code>UPPER()</code>、<code>ABS()</code> 同输入必同输出，<strong>照常缓存</strong>。</p>
+<p>⚠️ <strong><code>CURRENT_DATE()</code> 非确定 vs <code>TO_DATE('2026-01-01')</code> 确定</strong>——写死的字面量是确定的，<u>问"现在几号"的才不是</u>。</p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ Local Disk Cache 的大小 = 仓库尺寸</strong>：尺寸 = 节点数 = 本地 SSD 总容量（XS 1 节点 → S 2 → M 4 → L 8，每档翻倍，缓存也翻倍）。缓存<u>物理上住在计算节点里</u>,所以<strong>挂起全清、缩容部分丢</strong>。</p>
+<p>⚠️ <strong>"与仓库尺寸无关"这句话只对 Result Cache 成立</strong>——它在 Cloud Services 层，仓库挂起甚至删掉都还在。<strong>这两个缓存互换就是本题的陷阱。</strong></p>
+<p><strong>SSD 满了怎么办：LRU 淘汰</strong>（踢掉最久没用的微分区）。</p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ Result Cache 是<u>账户级共享</u>，不是用户私有。</strong>A 跑过的查询，B 跑同样的 SQL 照样命中——这正是它在多人 BI 场景下的价值（同一张报表只有第一个人花 credit）。<strong>看到 <code>only their own</code> / <code>per-user</code> 一律排除。</strong></p>
+<p>唯一约束是<strong>权限</strong>：使用者的角色必须对底层表有足够权限（不能靠缓存绕过 RBAC）。<u>这是安全约束，不是"只能看自己的"。</u></p>
+<p><strong>口诀：结果缓存全账户共享，只看权限不看人；<code>RESULT_SCAN</code> 才认本人。</strong></p>
+</blockquote>
+<p><strong><code>RESULT_SCAN</code></strong>：把已执行查询的结果集当表再查——<code>SELECT * FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))</code>。<br>
+典型用法：<code>SHOW TABLES</code> 之后用它<strong>加 <code>WHERE</code> 过滤</strong>（<code>SHOW</code> 本身不支持 WHERE）；或对复杂查询结果做二次筛选而<strong>不重跑原查询</strong>（省 credit）。<br>
+⚠️ <strong>限制：结果保留 24 小时，且只有<u>同一用户</u>能对自己的 <code>query_id</code> 用 <code>RESULT_SCAN</code></strong>——<strong>这条"仅本人"是 <code>RESULT_SCAN</code> 的限制，不是 Result Cache 命中的限制，别混。</strong></p>
+<p>⚠️ <strong>假参数警告</strong>：真实存在的是 <code>USE_CACHED_RESULT</code>（控制 Result Cache，默认 <code>TRUE</code>）；<code>USE_METADATA_CACHE</code> <strong>是编造的</strong>。元数据缓存<u>不可配置</u>。考试惯用手法就是把真参数改一个词。</p>
+<blockquote class="key">
+<p><strong>Result Cache vs 物化视图 —— 都能让"重复查询"变快，考题靠两个词区分。</strong></p>
+<table>
+<thead>
+<tr><th></th><th>Result Cache</th><th>Materialized View</th></tr>
+</thead>
+<tbody>
+<tr><td>要求</td><td><strong>SQL 完全一致</strong>且底层数据<strong>未变</strong></td><td>查询可以不同（只要能用上 MV），<strong>数据变了自动刷新</strong></td></tr>
+<tr><td>有效期</td><td><strong>24 小时</strong>（复用续期，最长 31 天）</td><td>长期存在，直到被删</td></tr>
+<tr><td>成本</td><td><strong>零 credit</strong></td><td>有<strong>存储 + 后台维护</strong>成本</td></tr>
+<tr><td>数据一变</td><td><strong>立即失效</strong></td><td>自动增量维护，仍可用</td></tr>
+</tbody>
+</table>
+<p><strong>题眼</strong>：强调 <em>“exact same query repeatedly”</em> → <strong>Result Cache</strong>；强调 <em>“same aggregation, data keeps changing”</em> → <strong>Materialized View</strong>。<br>
+<strong>关键分水岭是"数据变不变"</strong>：数据一变，Result Cache 直接失效，这时候还想快就只能靠 MV。</p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ MV 的 JOIN 限制只发生在<u>创建那一刻</u>。</strong></p>
+<pre><code>-- 定义 MV 时写 JOIN         ❌ 报错（只能单表）
+CREATE MATERIALIZED VIEW mv AS
+  SELECT … FROM orders a JOIN customers b ON …;
+
+-- 建好后 JOIN 这个 MV        ✅ 完全可以
+SELECT * FROM my_mv m JOIN other_table t ON m.id = t.id;
+</code></pre>
+<p><strong>MV 建成之后就是个普通可查询对象</strong>——和表一样能被 JOIN、被视图引用、出现在任何 <code>SELECT</code> 里。<strong>限制在「定义时」，不在「使用时」。</strong></p>
+<p>⚠️ <strong>两个选项都提 JOIN 时，先分清它说的是<u>定义</u>还是<u>使用</u>。</strong>「MV 不支持 JOIN」这句话本身是<u>半对的</u>——只对创建阶段成立。<br>
+要 JOIN、要多表、要链式 → <strong>Dynamic Table</strong>。</p>
+</blockquote>
+<h3>Query Profile / Query Insights 读法</h3>
+<blockquote class="key core">
+<p><strong>★ <code>EXPLAIN</code> 给「预估」，Query Profile 给「实测」——分水岭是<u>查询跑没跑</u>。</strong></p>
+<table>
+<thead><tr><th></th><th><code>EXPLAIN</code></th><th>Query Profile</th></tr></thead>
+<tbody>
+<tr><td>要执行查询吗</td><td><strong>不用</strong></td><td><strong>必须先跑一遍</strong></td></tr>
+<tr><td>住在哪一层</td><td><strong>Cloud Services</strong>（优化器读元数据）</td><td>先在 <strong>Compute</strong> 跑，事后读执行历史</td></tr>
+<tr><td>要 warehouse / 花 credit 吗</td><td><strong>都不要</strong></td><td>要</td></tr>
+<tr><td>给什么数字</td><td>预估分区数、预估字节、算子顺序</td><td><strong>实际</strong>扫描分区、<code>spilling</code>、各算子耗时占比、skew</td></tr>
+</tbody>
+</table>
+<p><strong>信号词</strong>：<code>without executing</code> / <code>estimate</code> / <code>no warehouse</code> → <strong><code>EXPLAIN</code></strong>；<code>actual</code> / <code>spilled</code> / <code>time spent</code> → <strong>Query Profile</strong>。</p>
+<p>这仍是三层架构的推论：<strong>出计划 = Cloud Services，跑查询 = Compute</strong>（同 <code>execution plan</code> vs <code>execution</code> 那条）。</p>
+</blockquote>
+<blockquote class="key">
+<p>考纲 4.1 原文写的是 <strong>“Query Profile/Query insights”</strong>，两个并列。<strong>Query Insights</strong> 是 Snowsight 里的新面板：Query Profile 给你<strong>原始执行细节</strong>（要你自己看懂），Query Insights 直接<strong>把常见问题诊断出来告诉你</strong>——例如"这个查询有 exploding join""剪枝无效""用了非最优的 join 顺序"。<br><strong>一句话区分</strong>：Profile = 数据；Insights = 结论。下面四条正是 Insights 会自动标出来的东西。</p>
+</blockquote>
+<ul>
+<li><strong>Bytes spilled to local storage</strong>：内存不够，溢出到本地 SSD → 考虑<strong>加大 warehouse</strong></li>
+<li><strong>Bytes spilled to remote storage</strong>：更严重，溢出到远程存储 → 必须加大 warehouse 或优化查询</li>
+<li><strong>Partitions scanned / Partitions total</strong>：比值高 = <strong>剪枝不良</strong> → 考虑 clustering key 或改写 WHERE</li>
+<li><strong>Exploding join</strong>：输出行数远大于输入 → JOIN 条件写错（笛卡尔积）</li>
+<li><strong>Queuing</strong>：排队 → <strong>加多集群（scale out）</strong>，不是加大尺寸</li>
+</ul>
+<blockquote class="key core">
+<p><strong>★ 问 <code>help optimize</code> 时，只选<u>能拧的旋钮</u>，不选<u>状态的副产品</u>。</strong></p>
+<p><strong>判据一句话：看完这个数字，我能对<u>这条查询</u>做出一个动作吗？</strong>答不上来的就不是优化点。</p>
+<table>
+<thead><tr><th>指标</th><th>看完能做什么</th></tr></thead>
+<tbody>
+<tr><td><code>Bytes scanned</code> ↑</td><td>加 clustering key、改写 WHERE、建 MV → <strong>有动作 ✅</strong></td></tr>
+<tr><td><code>Partitions scanned / total</code> ↑</td><td>剪枝失效 → clustering key、改谓词 → <strong>有动作 ✅</strong></td></tr>
+<tr><td><code>Bytes spilled</code> ↑</td><td>加大 warehouse → <strong>有动作 ✅</strong></td></tr>
+<tr><td><code>Percentage scanned from cache</code> ↓</td><td>缓存高低取决于仓库刚不刚启动、之前跑过什么，<strong>你命令不了它</strong> → <strong>❌</strong></td></tr>
+</tbody>
+</table>
+<p>⚠️ <strong><code>Percentage scanned from cache</code> 是 Query Profile 里<u>真实存在</u>的字段</strong>——干扰项不靠编词，靠<strong>把「真指标」当成「优化手段」</strong>。<u>字段存在 ≠ 它是杠杆。</u></p>
+<p>硬要影响它只能调 <code>AUTO_SUSPEND</code> 保住 warehouse cache，但那是<strong>仓库配置层面</strong>的事，不是「优化这条查询」。</p>
+</blockquote>
+<p><strong>考纲 4.1 还点名了两个 ACCOUNT_USAGE 视图</strong>（在 <code>SNOWFLAKE</code> 数据库里，365 天保留、有延迟）：</p>
+<ul>
+<li><strong>QUERY_HISTORY</strong>：查过什么、耗时多久、用了哪个 warehouse。事后排查慢查询的入口</li>
+<li><strong>QUERY_ATTRIBUTION_HISTORY</strong>：把 <strong>credit 成本归因到具体查询</strong>。题眼是<strong>"哪个查询最烧钱"</strong>——注意这是<strong>成本</strong>问题不是<strong>性能</strong>问题，问"最慢"用 QUERY_HISTORY，问"最贵"用 query attribution</li>
+</ul>
+<p><strong>Workload management</strong>：把<strong>相似的工作负载分到同一个 warehouse</strong>（ETL 一个、BI 一个、ad-hoc 一个），而不是所有人共用一个。理由是 warehouse cache 只对相似查询有效，混用会互相冲掉缓存，且难以单独调尺寸和归因成本。</p>
+<h3>三个优化服务（都是 serverless，另外收费）</h3>
+<table>
+<thead>
+<tr>
+<th>服务</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Query Acceleration Service (QAS)</strong></td>
+<td>单个大扫描的查询拖慢整体，把部分工作卸载到 serverless 资源。适合扫描量大、有过滤/聚合的临时查询</td>
+</tr>
+<tr>
+<td><strong>Search Optimization Service</strong></td>
+<td><strong>点查（point lookup）</strong>、高选择性的等值过滤、substring/正则、VARIANT 字段查询。适合大表里捞极少数行</td>
+</tr>
+<tr>
+<td><strong>Materialized View</strong></td>
+<td>反复对大表跑同样的昂贵聚合。Enterprise+，自动维护</td>
+</tr>
+</tbody>
+</table>
+<blockquote class="key core">
+<p><strong>★ SOS 和 Automatic Clustering 管的是两件不同的事，别因为"都在性能优化里"就当同类：Automatic Clustering <u>动数据本身</u>（reclustering，把相似值挪到更少的分区里，改的是"micro-partition 里的数据组织方式"）；SOS <u>不挪数据</u>，只是另建一份<u>查找用的访问路径</u>（辅助索引），加速点查。</strong></p>
+<p>⚠️ 题干出现 <em>"organization of data in a micro-partition"</em> / "数据在分区里怎么组织" 这类措辞 → 精确指向<strong>物理排布</strong>，答案只能是 <strong>Automatic Clustering</strong>；SOS 再眼熟、再常和 clustering 放一起考，都不涉及"数据怎么摆"这件事。</p>
+<p><strong>★ 开启 SOS 要<u>两个权限同时具备</u>，不是二选一：表上的 <code>OWNERSHIP</code> + schema 上的 <code>ADD SEARCH OPTIMIZATION</code>。</strong></p>
+<p><strong>判据「能力权限在对象上，成本权限在容器上」</strong>：改表的物理结构（加搜索访问路径）→ 得是表的<u>主人</u>；而 SOS <strong>开了就持续烧存储费 + 后台维护 credit</strong>，所以 Snowflake 把「允许在这个 schema 里开烧钱功能」单独做成一个权限，好让更高层管理员卡住。<u>MV、Clustering Key 是同一族的「持续烧钱」功能。</u></p>
+<p>⚠️ <strong>表上<u>没有</u> <code>MODIFY</code> 权限。</strong><code>MODIFY</code> 在 Snowflake 里确实存在，但只用于 <strong>warehouse / resource monitor / 账户级参数</strong>（<code>GRANT MODIFY ON WAREHOUSE …</code>）。<strong>对表做结构性变更用的是 <code>OWNERSHIP</code>。</strong><br>
+<u>这是「移植型假选项」：词是真的，位置是假的</u>（同族：<code>WAREHOUSE_USAGE</code> schema）。<strong>造词干扰有两种——凭空编，和把真词挪到不存在它的地方。后者更难识破。</strong></p>
+<p>⚠️ <strong>「must have which of the following」= 找<u>全部</u>必要条件</strong>，别在选出一个合理项后就停。<u>问句是复数就默认不止一个。</u></p>
+</blockquote>
+<h3>症状 → 对策（先问"是不是 warehouse 问题"）</h3>
+<blockquote class="key core">
+<p><strong>判断顺序：先排除 warehouse，再谈优化服务。</strong>题目给的是<strong>症状</strong>，不是"我想上哪个服务"。先看症状指向的是<strong>资源不够</strong>（内存/并发）还是<strong>访问路径不好</strong>——前者改 warehouse，后者才上服务。<strong>别一看到"慢"就往优化服务上选。</strong></p>
+</blockquote>
+<table class="core">
+<thead>
+<tr><th>症状</th><th>对策</th><th>为什么</th></tr>
+</thead>
+<tbody>
+<tr><td>查一行 / 大表里捞极少数行</td><td><strong>Search Optimization</strong></td><td rowspan="4">访问路径问题</td></tr>
+<tr><td>扫描量巨大但只要一部分结果</td><td><strong>QAS</strong></td></tr>
+<tr><td>同一聚合反复算</td><td><strong>Materialized View</strong></td></tr>
+<tr><td>总是按某列过滤大表（大表、写少读多）</td><td><strong>Clustering Key</strong></td></tr>
+<tr><td><strong>扫描分区数 ≈ 总分区数</strong>（<code>partitions scanned ≈ partitions total</code>）</td><td><strong>Clustering Key</strong> 或 <strong>SOS</strong>；也可能是 WHERE 写法挡住了剪枝</td><td><strong>剪枝失效</strong></td></tr>
+<tr><td><strong>查询排队</strong>（queued / <code>QUEUED_OVERLOAD_TIME</code> 高）</td><td><strong>多集群 scale out</strong></td><td><strong>并发不够</strong></td></tr>
+<tr><td><strong>溢出到本地或远程存储</strong>（<code>bytes spilled to local/remote storage</code>）</td><td><strong>加大 warehouse scale up</strong></td><td><strong>内存不够</strong></td></tr>
+</tbody>
+</table>
+<p><strong>最后两条最容易丢分</strong>，因为它们长得像"性能问题"，实际是资源问题：<code>bytes spilled to local storage</code> 出现 → <strong>内存不够 → scale up</strong>；<code>queued overload time</code> 高 → <strong>并发不够 → scale out</strong>。记住<strong>「溢出往上、排队往外」</strong>。</p>
+<blockquote class="key core">
+<p><strong>★ 排队的正解是加集群，不是调 <code>MAX_CONCURRENCY_LEVEL</code>。</strong>该参数（默认 <strong>8</strong>）只是<u>单个集群同时跑几条查询</u>的上限，<strong>调高它不增加任何计算资源</strong>——只是让更多查询挤进同一批节点抢内存和 CPU。<strong>排队时间是短了，每条查询自己变慢了</strong>，总吞吐没涨，还可能因内存被瓜分而 <code>spilling</code>，反而更差。</p>
+<p><strong>一句话：那是把队伍从门外挪到门内。</strong>要真正扩容并发，只有 <strong>多集群 scale out</strong>。</p>
+<p><strong>读图信号</strong>：<code>Running</code> 与 <code>Queued</code> <u>并存</u> → 并发不足（不是单查询慢）；排队<u>周期性、可预测</u>（如每天上午高峰）→ <strong>multi-cluster auto-scale</strong>（MIN≠MAX），而不是手工调大尺寸。</p>
+</blockquote>
+<h3>UDF / UDTF / Stored Procedure</h3>
+<blockquote class="key core">
+<p><strong>★ 最高频的一条：UDF 是「算值」，Stored Procedure 是「干活」。</strong>能改数据（DML/DDL）的只有 Stored Procedure。</p>
+</blockquote>
+<table>
+<thead>
+<tr><th></th><th>UDF</th><th>Stored Procedure</th></tr>
+</thead>
+<tbody>
+<tr><td>调用方式</td><td><strong>SQL 语句中</strong>：<code>SELECT my_udf(col)</code></td><td><strong><code>CALL my_proc()</code></strong>，<strong>不能嵌入 SQL</strong></td></tr>
+<tr><td>返回值</td><td><strong>必须有</strong>，且可用于查询</td><td><strong>可选</strong></td></tr>
+<tr><td>执行 DML / DDL</td><td>❌ 不能</td><td>✅ 能</td></tr>
+<tr><td>调用次数</td><td><strong>每行一次</strong></td><td><strong>整体一次</strong></td></tr>
+</tbody>
+</table>
+<h4>语言 × 对象类型矩阵</h4>
+<table>
+<thead>
+<tr><th></th><th>SQL</th><th>JavaScript</th><th>Python</th><th>Java</th><th>Scala</th></tr>
+</thead>
+<tbody>
+<tr><td>UDF</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td><strong>UDTF</strong></td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td><strong>❌</strong></td></tr>
+<tr><td>Stored Procedure</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+</tbody>
+</table>
+<blockquote class="key">
+<p><strong>口诀：Scala 没表（UDTF）。</strong>整张矩阵只有这一个格是空的，记这一个洞即可。</p>
+<p>另：<strong>Stored Procedure 还多一种语言 —— Snowflake Scripting</strong>（SQL 的过程化扩展，<code>BEGIN…END</code>），<strong>UDF 不能用</strong>。</p>
+</blockquote>
+<blockquote class="key">
+<p>⚠️ <strong>做题提醒：这类语言题题库很可能是旧的。</strong>老题只认 <strong>SQL + JavaScript</strong>（Snowpark 语言尚未支持的年代）。<br>
+<strong>策略</strong>：优先按官方现状答；若选项里<u>明显排除了 Python/Java/Scala</u>，说明这题在考老版本，按 <strong>SQL + JavaScript</strong> 走。<strong>答错这类题不代表你记错了，是题库老了——别因此动摇正确的知识。</strong></p>
+</blockquote>
+<h3>DML 的表锁与并发阻塞</h3>
+<blockquote class="key core">
+<p><strong>★ 判断标准只有一句：这条命令需不需要「先找到已有的行再改它」？</strong><br>
+需要 → 拿<strong>表级锁</strong>，同表并发会<strong>串行排队</strong>；不需要（纯追加）→ <strong>不阻塞</strong>，可并发跑。</p>
+<p><strong>口诀：只加不改的不锁表。</strong></p>
+</blockquote>
+<table>
+<thead>
+<tr><th>操作</th><th>是否锁表</th><th>原因</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>INSERT</strong></td><td>✅ 不阻塞</td><td>纯追加，只写新微分区</td></tr>
+<tr><td><strong>COPY INTO &lt;table&gt;</strong></td><td>✅ 不阻塞</td><td>同上，append-only</td></tr>
+<tr><td><strong>UPDATE</strong></td><td>❌ 锁表</td><td>要定位并重写已有行</td></tr>
+<tr><td><strong>DELETE</strong></td><td>❌ 锁表</td><td>同上</td></tr>
+<tr><td><strong>MERGE</strong></td><td>❌ 锁表</td><td>同上（最典型）</td></tr>
+</tbody>
+</table>
+<ul>
+<li>微分区<strong>不可变</strong>：UPDATE/DELETE 实际是「重写受影响的微分区」，所以必须先锁定它们</li>
+<li>因此<strong>并发的多个 INSERT/COPY 可以同时灌同一张表</strong>——这正是 Snowpipe 能并行加载的前提</li>
+<li>被阻塞的 DML 会等待，超时由 <code>LOCK_TIMEOUT</code> 控制（默认 43200 秒 = 12 小时）</li>
+</ul>
+<h3>数据转换：聚合函数与窗口函数<span class="tagx">考纲 4.4 点名 · 题库可能还没出到</span></h3>
+<blockquote class="key">
+<p><strong>★ 一句话区分：聚合函数<u>把多行压成一行</u>；窗口函数<u>行数不变</u>，只是每行多算一个跨行的值。</strong></p>
+<p><strong>口诀：GROUP BY 减行，OVER 不减行。</strong></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th></th><th>聚合函数（Aggregate）</th><th>窗口函数（Window）</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>写法</td><td><code>SUM(x) … GROUP BY</code></td><td><code>SUM(x) OVER (PARTITION BY … ORDER BY …)</code></td></tr>
+<tr><td>输出行数</td><td><strong>每组 1 行</strong></td><td><strong>与输入相同</strong></td></tr>
+<tr><td>典型题干</td><td>“total per region”</td><td>“running total” / “rank within each …” / “compare each row to its group”</td></tr>
+</tbody>
+</table>
+<ul>
+<li><strong>只需认得出的几个</strong>：<code>ROW_NUMBER</code> / <code>RANK</code> / <code>DENSE_RANK</code>（并列后是否跳号：RANK 跳，DENSE_RANK 不跳）、<code>LAG</code> / <code>LEAD</code>（取前一行/后一行）、<code>NTILE</code>、<code>SUM…OVER</code> 累计</li>
+<li><code>PARTITION BY</code> = <strong>分组但不合并</strong>；<code>ORDER BY</code> 在 <code>OVER()</code> 里决定<strong>累计的顺序</strong></li>
+<li>聚合里 <strong><code>COUNT(*)</code> 数所有行，<code>COUNT(列)</code> 跳过 NULL</strong>——这是 SQL 通用陷阱，考纲说"假设你会基础 SQL"</li>
+<li><strong>半结构化的转换工具</strong>（同属 4.4）：<code>PARSE_JSON</code> / <code>TO_VARIANT</code> / <code>OBJECT_CONSTRUCT</code> / <code>:</code> 与 <code>[]</code> 取值 / <code>::</code> 强转 / <code>FLATTEN</code></li>
+</ul>
+<h3>克隆与 Time Travel</h3>
+<ul>
+<li><strong>Zero-copy clone</strong>：瞬时、初始不占额外存储（共享 micro-partition），改动才产生新分区。可克隆 database / schema / table</li>
+<li><strong>不能克隆</strong>：内部 stage <u>里的文件</u>（stage 对象本身会克隆，文件不复制）、指向 internal stage 的 <strong>Snowpipe</strong>、<strong>临时表 / 临时对象</strong></li>
+<li>克隆 database/schema 会带走<strong>全部</strong>子对象：schema、table、<strong>view、stage、file format、sequence、stream、task、外部表</strong>…… ⚠️ 选项用 <strong><code>only schemas and tables</code></strong> 把范围收窄 → <strong>False</strong></li>
+<li>权限：<strong>子对象的权限<u>会</u>克隆，被克隆对象<u>自身</u>的权限<u>不</u>克隆</strong>（自身的可用 <code>COPY GRANTS</code> 补上）</li>
+<li><strong>Time Travel</strong>：<code>AT</code> / <code>BEFORE</code> + <code>TIMESTAMP</code> / <code>OFFSET</code> / <code>STATEMENT</code>。<code>UNDROP TABLE</code> 恢复删除的表。<strong>★ <code>UNDROP</code> 就是 Time Travel 的一个应用</strong>——DROP 掉的对象没真消失，只是<u>在保留期里被标记为已删除</u>，所以 <strong>只有「有 Time Travel 的对象」才能 UNDROP：<code>DATABASE</code> / <code>SCHEMA</code> / <code>TABLE</code></strong>。<u>先问「这东西有没有 TT」，就不用背 UNDROP 的适用清单</u></li>
+<li>Standard 版：<strong>0 或 1 天</strong>；Enterprise+ 永久表：<strong>最多 90 天</strong></li>
+<li><code>DATA_RETENTION_TIME_IN_DAYS</code> 控制，<strong>四个层级都能设：Account → Database → Schema → Table，最细到 Table</strong>。下层继承上层、可覆盖；在 DB/Schema 上设值会作用于其下所有已有和新建对象（除非对象自己显式设过）</li>
+<li>设为 <strong>0 = 关闭 Time Travel</strong>：不能 <code>UNDROP</code>、不能 <code>AT</code>/<code>BEFORE</code>。但永久表<strong>仍有 7 天 Fail-safe</strong>（只能找 Snowflake 支持，自己碰不到）</li>
+<li><strong>Fail-safe</strong>：Time Travel 结束后额外 <strong>7 天</strong>，<strong>仅永久表</strong>，<strong>只能由 Snowflake 支持人员恢复</strong>，用户无法查询，且<strong>照常收存储费</strong></li>
+</ul>
+<blockquote class="key core">
+<p><strong>★ 三个数字先分「性质」再记值：<u>默认</u> 1 天（TT，所有版本）· <u>固定</u> 7 天（Fail-safe，不可改）· <u>上限</u> 90 天（TT，Enterprise+，要手动设）。</strong></p>
+<table>
+<thead><tr><th>数字</th><th>属于谁</th><th>性质</th></tr></thead>
+<tbody>
+<tr><td><strong>1 天</strong></td><td>Time Travel</td><td><strong>默认值</strong>（问 <code>default</code> 只能是它）</td></tr>
+<tr><td><strong>7 天</strong></td><td>Fail-safe</td><td><strong>固定</strong>，不可配</td></tr>
+<tr><td><strong>90 天</strong></td><td>Time Travel</td><td><strong>最大值</strong>，需 Enterprise+ 且手动设</td></tr>
+</tbody>
+</table>
+<p>⚠️ <strong>7 天是本题唯一的诱饵，因为它两处都出现</strong>：既是 Fail-safe 的固定长度，又是 Enterprise 常见的 TT 配置值——<strong>但它从来不是任何东西的<u>默认值</u></strong>。<u>看到 <code>default</code> 这个词，先问「默认/固定/上限，问的是哪一个」，再报数。</u></p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ 克隆的权限规则（反直觉，高频）：口诀「克隆有里无外 —— 里面的对象和权限都带走，外壳自己的权限归零」。</strong></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>克隆一个 database，什么跟着走？</th><th></th>
+</tr>
+</thead>
+<tbody>
+<tr><td>库<strong>自身</strong>的权限（谁能访问这个库）</td><td><strong>❌ 不克隆</strong>——只有执行克隆的 role 拥有它</td></tr>
+<tr><td>库<strong>内部</strong> schema / table 上的权限</td><td><strong>✅ 克隆</strong></td></tr>
+<tr><td><strong>Future grants</strong>（<code>GRANT … ON FUTURE</code>）</td><td><strong>❌ 不克隆</strong>——克隆是时间点快照，只复制<u>当时已存在</u>的东西</td></tr>
+</tbody>
+</table>
+<blockquote class="key">
+<p><strong>设计动机（记住它就不用背规则）</strong>：克隆常用来造 dev/test 环境。库<u>内部</u>的权限结构要原样保留（省得重新授权），但<u>这个新库该给谁看</u>必须由你重新决定——否则一克隆，所有能访问生产库的人自动就能访问测试库，等于权限泄漏。</p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ 口诀：写死库名的，克隆后还认老家；不写库名的，跟着新家走。</strong></p>
+<p><strong>克隆复制的是对象<u>定义的文本</u>，不会去改写里面的引用。</strong>所以克隆出来的 view / 存储过程 / task 里，只要引用是 <strong>fully qualified</strong>（<code>prod_db.public.orders</code> 三段写全），它<strong>照样指向原库</strong>；只有非限定或 schema 级引用（<code>public.orders</code>）才会在新库里自洽。</p>
+<table>
+<thead><tr><th>克隆出的 view/proc 里写的是</th><th>克隆后指向</th></tr></thead>
+<tbody>
+<tr><td><code>prod_db.public.orders</code>（完全限定）</td><td><strong>原库 prod_db</strong> ⚠️</td></tr>
+<tr><td><code>public.orders</code> / <code>orders</code>（非限定）</td><td><strong>克隆后的新库</strong> ✅</td></tr>
+</tbody>
+</table>
+<p><strong>真实踩坑</strong>：克隆生产库到 <code>dev_db</code> 做测试，结果 <code>dev_db</code> 里的存储过程<u>往生产表写数据</u>。防范做法就是在 view/proc 里<strong>尽量不写库名</strong>，让克隆能自洽。</p>
+<p>⚠️ <strong>题眼是 <code>fully qualified</code> 这个词本身</strong>——它一出现，问的就不是「克隆带不带走对象」，而是「引用还指着谁」。<u>看到它先想「文本没被改写」。</u></p>
+</blockquote>
+<p><strong>顺序</strong>：Active → Time Travel（0–90天）→ Fail-safe（7天）→ 彻底删除</p>
+<blockquote class="key core">
+<p><strong>★ 删除 ≠ 停止计费。存储费一直收到 <u>Fail-safe 也过期</u> 为止。</strong></p>
+<pre><code>Active ──DELETE/DROP──▶ Time Travel(0–90天) ──▶ Fail-safe(7天) ──▶ 彻底清除
+  计费                      仍计费                  仍计费          停止计费 ✅
+</code></pre>
+<p><strong>原因是微分区<u>不可变</u>(immutable)</strong>：<code>DELETE</code> 一行不会去改原分区，而是<strong>写一个新分区、把旧分区标记为历史版本</strong>。旧分区还实实在在躺在存储里、随时可被 Time Travel 召回——<strong>东西还在，钱就还收</strong>。</p>
+<p>所以「删了表为什么存储没降」的答案永远是这条；要查各段各占多少，用 <code>TABLE_STORAGE_METRICS</code>。<strong>永久表最坏情况 = TT 90 天 + FS 7 天 = 97 天后才停止计费。</strong></p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ 题眼 “both querying <u>and</u> restoring” → 只有 Time Travel 两样都能干。</strong></p>
+<p><strong>口诀：Time Travel 能看能救，Fail-safe 只能救、还得求人。</strong></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th></th><th>Time Travel</th><th>Fail-safe</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>时长</td><td>0–1 天（Standard）/ 0–90 天（Enterprise+）</td><td><strong>固定 7 天</strong>，紧接 TT 之后</td></tr>
+<tr><td>谁能用</td><td>用户自己，<strong>SQL 直接操作</strong></td><td><strong>只有 Snowflake 支持团队</strong>，要开工单</td></tr>
+<tr><td>能<strong>查询</strong>吗</td><td>✅ <code>AT</code> / <code>BEFORE</code></td><td><strong>❌</strong></td></tr>
+<tr><td>能<strong>恢复</strong>吗</td><td>✅ <code>UNDROP</code>、<code>CLONE … AT()</code></td><td>✅</td></tr>
+<tr><td>可配置吗</td><td>✅ <code>DATA_RETENTION_TIME_IN_DAYS</code></td><td><strong>❌ 不可配置、不可关闭、不可跳过</strong></td></tr>
+</tbody>
+</table>
+<blockquote class="key">
+<p>⚠️ <strong>「用于 querying 的功能」＝ 能执行查询这个<u>动作</u>，不是「能让查询变<u>快</u>」。</strong>Clustering key / SOS / QAS / MV 都是<strong>优化手段</strong>，选项问「哪个功能用来查询历史数据」时它们全部出局。<strong>Cloning 也不算「查询历史」</strong>——它产出的是一个新对象。</p>
+</blockquote>
+<hr />
+</div></details>
+<details class="sec" id="n5"><summary><span class="stitle">Domain 5：数据协作（10%）</span><span class="chev"></span></summary><div class="sbody">
+<h3>Secure Data Sharing 基本原理</h3>
+<ul>
+<li>共享的是<strong>元数据引用</strong>，<strong>不复制数据</strong>，消费者查询时用<strong>自己的 warehouse 算力</strong>，提供者不承担计算成本</li>
+<li>提供者只付存储费；消费者只付计算费</li>
+<li>数据<strong>实时</strong>：提供者更新，消费者立刻看到</li>
+<li>共享对象只能是：<strong>表、外部表、安全视图、安全物化视图、安全 UDF</strong></li>
+<li>消费者对共享数据<strong>只读</strong>，且<strong>不能再共享（no reshare，默认）</strong></li>
+<li><strong>不能</strong>放进 share 的：<strong>普通 View</strong>（必须 Secure View）、<strong>普通物化视图</strong>、Stored Procedure、Stage / Pipe / Task、Sequence。<strong>记：共享的东西必须是 Secure 的</strong>——普通 view 会暴露底层定义</li>
+<li>消费方要 <code>CREATE DATABASE … FROM SHARE provider.share_name</code> 才能用；该库<strong>只读</strong>，不能建表、不能 DML</li>
+</ul>
+<blockquote class="key core">
+<p><strong>★ Revoke 权限 = 掐断指针，consumer 端瞬间归零，没有任何"降级但可用"的中间态。</strong>因为从头到尾都没复制过数据——consumer 一直靠的是指向 provider 存储的元数据引用，revoke 就是掐断这条引用，不存在"留一份快照/副本"这种缓冲机制，更不会让 consumer 突然开始承担存储费（它本来就没存过东西）。</p>
+<p>⚠️ 别用其他云厂商"断开同步后保留最后一份快照"的经验类比——Snowflake 的哲学是<u>干脆、不留驻留</u>：GRANT 时不复制，REVOKE 时也没什么可"回收"的，直接变不可访问。</p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ 可分享对象只有五种：Table、External Table、<u>Secure</u> View、<u>Secure</u> Materialized View、<u>Secure</u> UDF——"Secure" 前缀不是可有可无的修饰词，是硬性前提。</strong></p>
+<table>
+<thead><tr><th>对象</th><th>要不要 Secure 前缀</th></tr></thead>
+<tbody>
+<tr><td>Table / External Table</td><td>不需要，本身即可分享</td></tr>
+<tr><td>View</td><td>✅ 必须是 <strong>Secure View</strong>，普通 view 不能分享（会暴露底层定义）</td></tr>
+<tr><td>Materialized View</td><td>✅ 必须是 <strong>Secure Materialized View</strong>，普通物化视图不能分享</td></tr>
+<tr><td>UDF</td><td>✅ 必须是 <strong>Secure UDF</strong>，普通 UDF 不能分享</td></tr>
+</tbody>
+</table>
+<p>⚠️ <strong>完全不能分享（不存在 secure 版本可救）</strong>：Stored Procedure、Stage / Pipe / Task、Sequence、<strong>Stream</strong>。<u>看到题干把 View/Materialized View/UDF 直接写成不带 Secure 的形式，先怀疑它是陷阱，别只看对象类型对不对。</u></p>
+<p>⚠️ <strong><code>Files</code> 干扰更隐蔽：它压根不是数据库对象</strong>（不是 table/view/UDF 这类可被 GRANT 的东西），Secure Share 分享的是<u>数据库对象</u>，Files 从一开始就不在候选范围里，不需要靠"是不是 secure 版本"去排除它。</p>
+</blockquote>
+<blockquote class="key">
+<p><strong>★ 两个「How many」必须成对记，出题人拿它们互相伪装 —— 先分清问的是哪一端：</strong></p>
+</blockquote>
+<table>
+<thead>
+<tr><th>问的是</th><th>答案</th></tr>
+</thead>
+<tbody>
+<tr><td>一个 <strong>Consumer 能接收</strong>多少个 share</td><td><strong>无限制</strong></td></tr>
+<tr><td>一个 <strong>share 里能放</strong>几个数据库</td><td><strong>只能 1 个</strong> ⚠️ 要共享多个库 → 建多个 share</td></tr>
+</tbody>
+</table>
+<blockquote class="key core">
+<p><strong>口诀：收无限，发只一</strong>——Consumer 收多少都行，一个 share 只装一个库。<br>
+<strong>共享必 Secure，零拷贝，算力自付。</strong></p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ Marketplace / 共享的四大卖点，全是「不用做某事」：</strong><strong>No copying</strong>（不占 Consumer 存储）· <strong>No ETL</strong>（直接 SQL 查）· <strong>Live / always current</strong>（Provider 一更新就可见）· <strong>Instant access</strong>（Standard listing 点击即用）。</p>
+<p>⚠️ <strong>「免除」和「禁止」只差一个介词，答案在这里分岔：</strong></p>
+<table>
+<thead><tr><th>措辞</th><th>含义</th><th>判</th></tr></thead>
+<tbody>
+<tr><td><code>available <u>without</u> copying</code> / <code>no need to</code></td><td><strong>不必</strong>复制</td><td>✅ 共享题的标准答案措辞</td></tr>
+<tr><td><code><u>not</u> available <u>for</u> copying</code> / <code>cannot</code> / <code>is prohibited</code></td><td><strong>禁止</strong>复制</td><td>❌ 假的</td></tr>
+</tbody>
+</table>
+<p><strong>Snowflake 的措辞哲学是「给你便利」，极少是「禁止你做」。</strong>看到绝对否定先怀疑；看到免除性表述（without / no need to / eliminates the need）优先。</p>
+<p>⚠️ <strong>另一条免费判据：读不通的句子通常就是错的。</strong>例如 <code>loaded into a cloud provider as a consumer account</code>——<code>cloud provider</code> 是 AWS/Azure/GCP，<code>consumer account</code> 是 Snowflake 账户，<strong>两个层级被搅在一起</strong>。<u>选项语法混乱 = 出题人在硬凑错误项</u>，不必细究含义。</p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ Secure View/UDF 跨库引用时，普通 <code>SELECT</code> 权限不够，还得单独授 <code>REFERENCE_USAGE</code>——这是 Snowflake 专门为"view 属于 A 库，但查询引用了 B 库对象"设计的权限。</strong></p>
+<p>同库场景：share 上只需 <code>SELECT</code>（view 本身 + 底层表）即可，标准流程。<br>
+跨库场景：view 定义里 JOIN/引用了另一个数据库的对象 → 必须在<u>被引用的那个库</u>上对 share 额外授予 <code>REFERENCE_USAGE ON DATABASE</code>，否则那层跨库引用不合法生效——Share 的设计原则是"少暴露"，不会因为 view 能 SELECT 就自动放行它牵连到的其他库。</p>
+<p>⚠️ 题干出现"secure view 引用了另一个数据库的表/对象"这类描述 → 别停在 SELECT，先想到 <code>REFERENCE_USAGE</code>。</p>
+</blockquote>
+<h3>三种共享方式（本次错题正是这里）</h3>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>目标受众</th>
+<th>关键点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Direct Share</strong></td>
+<td><strong>指定的具体账户</strong></td>
+<td>需要知道对方 account identifier；同区域同云。最简单</td>
+</tr>
+<tr>
+<td><strong>Private Listing</strong></td>
+<td>特定组织/指定账户，可跨区域跨云</td>
+<td>有自动化的跨云复制</td>
+</tr>
+<tr>
+<td><strong>Public Listing（Marketplace）</strong></td>
+<td><strong>任何 Snowflake 账户</strong></td>
+<td>公开发布到 Marketplace，全球可发现</td>
+</tr>
+<tr>
+<td><strong>Data Exchange</strong></td>
+<td>你自己邀请的成员组成的私有中心</td>
+<td>邀请制，非公开</td>
+</tr>
+</tbody>
+</table>
+<p><strong>记住那道错题</strong>：要让"<strong>同区域的任意账户</strong>"都能拿到 → <strong>public listing</strong>。Direct share 必须点名账户，Data Exchange 是邀请制。</p>
+<blockquote class="key core">
+<p><strong>★ Data Exchange 是「Snowflake 生态内部」的私域市场，参与方无论是同组织还是外部合作伙伴，都<u>必须先有 Snowflake 账户</u>——它解决的是"跟一群特定 Snowflake 用户私下共享"，不是"对接压根没有 Snowflake 账户的外部系统"。</strong></p>
+<p>⚠️ 题干出现 <em>"share with third parties that don't have Snowflake accounts"</em> / "与非 Snowflake 方共享" 这类描述 → <strong>直接排除</strong>，不管选项挂的是 Direct Share、Public Listing 还是 Data Exchange，<strong>任何 Snowflake 原生分享机制的边界都是「对方得有 Snowflake 账户」</strong>。</p>
+</blockquote>
+<h4>两种 listing 类型：Standard / Personalized<span class="tagx">高频</span></h4>
+<blockquote class="key core">
+<p><strong>★ 只有两种 listing 类型：<u>Standard</u> 和 <u>Personalized</u>。区别就一句：要不要提前谈。</strong></p>
+<table>
+<thead><tr><th></th><th>Standard Listing</th><th>Personalized Listing</th></tr></thead>
+<tbody>
+<tr><td>访问</td><td><strong>即时</strong>——<code>Get Data</code> 一点，立刻出现一个 database</td><td><strong>要申请</strong>——<code>Request Data</code>，Provider 审批并配置后才给</td></tr>
+<tr><td>数据</td><td>对所有消费者<strong>相同</strong>的现成数据集</td><td>Provider <strong>为该消费者定制</strong></td></tr>
+<tr><td>典型场景</td><td>免费公开数据（天气、人口普查、COVID）</td><td>商业合同数据、按客户裁剪、付费订阅</td></tr>
+</tbody>
+</table>
+<p>⚠️ <strong>「类型」问的是<u>发布物</u>，不是<u>参与方</u>。</strong>Provider / Consumer 是<strong>角色</strong>，不是 listing 类型——题干问 <code>types of listings</code> 时它们全是干扰项。</p>
+<p>⚠️ <strong>官方术语是 <code>Provider</code>，从来不叫 <code>Vendor</code>。</strong>选项里出现非官方词汇 → 先怀疑。（同 <code>key partitions</code>、<code>Hive connector</code>）</p>
+</blockquote>
+<h4>Listing 的跨区域行为（偏难，考纲 5.3）</h4>
+<blockquote class="key core">
+<p><strong>★ 核心区分：listing（挂牌）≠ data（数据）。</strong><br>
+<strong>Listing = 橱窗展示页</strong>（标题、描述、样例、价格）——是元数据，很轻，<strong>会自动复制到你选中的所有 region</strong>。<br>
+<strong>Data = 数据本体</strong>——躺在你自己的 region 里，<strong>不会自动跟过去</strong>；要让别的 region 真正读到，必须做<strong>跨区复制（replication）</strong>，费钱费时间。</p>
+<p><strong>口诀：橱窗自动飞，数据得付费搬 —— 有人要了再搬。</strong></p>
+<p><strong>推论（官方推荐做法）：standard listing 可以等<u>第一个消费者来要</u>时再复制数据过去</strong>——跨区复制贵，没客户的 region 不必提前烧钱。（对比：<strong>paid listing 要立刻交付，通常得预先备好</strong>。）</p>
+</blockquote>
+<blockquote class="key">
+<p>⚠️ <strong>两条「范围放得太宽」的错误说法：</strong><br>
+<strong>①「没有 Snowflake 账户的人也能直接消费」= False</strong>——消费者<u>必须</u>在某个 region 有 Snowflake 账户；没有的话只能走 <strong>Reader Account</strong>（由 provider 代建）。而且 <strong>share 是授予<u>账户</u>的，不是给每个 user 建一个 share</strong>。<br>
+<strong>②「同一 organization 下的任意账户自动可访问」= False</strong>——share 必须<strong>显式授予特定账户</strong>。这和克隆那题同源：<strong>Snowflake 一贯是显式授权，什么都不自动继承。</strong></p>
+<p>⚠️ <strong><code>ORGADMIN</code> 在这里是「正确知识点、错误场景」</strong>：它确实用于账户复制 / failover，但<strong>发布 listing 到远程 region 走的是 listing 机制，不需要手动 link accounts</strong>。</p>
+</blockquote>
+<ul>
+<li><strong>跨区域/跨云共享</strong>：底层需要<strong>数据库复制（replication）</strong>把数据复制过去，或用 listing 的自动复制</li>
+<li><strong>Reader Account</strong>：给<strong>没有 Snowflake 账户</strong>的消费者用。由提供者创建、拥有并<strong>付全部计算费用</strong>。Reader account 只能读，不能自己加载数据。用 <code>CREATE MANAGED ACCOUNT</code> 创建；因为费用记在提供者账上，<strong>提供者通常要配 Resource Monitor</strong> 防止对方乱跑查询烧钱</li>
+</ul>
+<blockquote class="key core">
+<p><strong>★ 共享的计费归属：地主付房租，租客付电费。</strong></p>
+<table>
+<thead><tr><th>项目</th><th>谁付</th></tr></thead>
+<tbody>
+<tr><td><strong>存储费</strong>（共享数据本体）</td><td><strong>Provider</strong></td></tr>
+<tr><td><strong>计算费</strong>（Consumer 查询）</td><td><strong>Consumer</strong>（用自己账户里的 warehouse）</td></tr>
+<tr><td><strong>计算费（Reader Account 查询）</strong></td><td><strong>Provider</strong> ← <u>唯一例外</u></td></tr>
+<tr><td>跨区域复制的数据传输费</td><td><strong>Provider</strong></td></tr>
+</tbody>
+</table>
+<p>⚠️ <strong>Egress（出口）费是云厂商（AWS/Azure/GCP）对跨 region / 跨云传输收的网络费，Snowflake 只是转嫁，不是自己定价。</strong>触发条件只看一句话：<strong>数据有没有跨越 region 或云边界被物理搬运</strong>。<code>within a specific region</code> / 同区域内共享 → <strong>不触发</strong> egress；跨区域、跨云的 replication → 触发。<u>题干出现"within a specific region"这类限定词时，它是排除 egress 的关键信息，不是触发条件——别被"data sharing = 跨账户传数据"的直觉带偏。</u></p>
+<p><strong>这不是规定，是架构的必然：存储与计算分离。</strong>数据躺在 Provider 的存储里，查询却是 Consumer 在<u>自己账户里</u>启动的 warehouse 跑的——两笔账天然记在两个账户上，<strong>不存在「跨账户代付」这种机制</strong>。</p>
+<p>⚠️ <strong><code>the provider pays for compute</code> 只有在题干出现 <u>Reader Account</u> / <code>managed account</code> 时才对。</strong>题干没提 Reader Account 就一律是 Consumer 付。Reader 是白吃白住的客人，房东全包——所以房东要配 Resource Monitor。</p>
+</blockquote>
+<blockquote class="key core">
+<p><strong>★ Reader Account 的「只读」限制的是<u>写</u>，不限制<u>读出去</u>。</strong></p>
+<p><strong>口诀：Reader 只读不写，但读得出去 —— 能查、能建仓、能导出；不能改、不能传、不能再分享。</strong></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>能 ✅</th><th>不能 ❌</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>查询共享数据（SELECT）</td><td>DDL / DML（建表、改数据）</td></tr>
+<tr><td><strong>创建 virtual warehouse</strong> 跑查询</td><td>上传自己的数据进 Snowflake</td></tr>
+<tr><td>Web UI 下载结果、<strong><code>COPY INTO</code> 外部 stage 卸载数据</strong></td><td><strong>再分享给别人（no re-share）</strong></td></tr>
+<tr><td>JDBC / ODBC / Python connector 拉数据</td><td>Time Travel、Cloning</td></tr>
+</tbody>
+</table>
+<blockquote class="key">
+<p><strong>★ 商业含义（考点）：Data Sharing 在技术上<u>无法防止数据外泄</u>——看得到的部分一定拿得走。</strong>控制手段只有两条：合同/法律，或用 <strong>Secure View / Row Access Policy 限制他看得到的范围</strong>。</p>
+</blockquote>
+<h3>复制与故障转移</h3>
+<ul>
+<li><strong>Replication</strong>：把数据库/账户对象复制到其他账户或区域</li>
+<li><strong>Failover / Failback</strong>：需要 <strong>Business Critical</strong> 及以上</li>
+<li><strong>Replication group / Failover group</strong>：一致性地复制一组对象</li>
+</ul>
+<blockquote class="key core">
+<p><strong>★ Replication 是<u>空间维度</u>（这个区域整个挂了怎么办），Time Travel / Fail-safe 是<u>时间维度</u>（我误删了一张表怎么办）——"多一份数据"不代表解决同一个故障场景，题干问的是哪种灾难要先分清。</strong></p>
+<p><strong>Database Replication 本身 Standard 起即可用</strong>（只读副本，可做读扩展/跨区分发）；<strong>Failover/Failback（Business Continuity）才要 Business Critical+</strong>。<u>选项把 replication 和 failover 捆在一起时，按门槛最高的算</u>（与前面「捆绑功能按门槛最高算」规则同源）。</p>
+<p>⚠️ <strong>secondary database 在 failover 真正发生之前只能读，不能写。</strong>题干问"能不能对 replica 做 DML" → 答案是不能。</p>
+<p>⚠️ <strong>不会被复制过去的东西</strong>：<strong>Time Travel 历史、Fail-safe、临时表/瞬态表的内容</strong>不跨区域带走；<strong>副本上的 Time Travel 是重新开始计算的</strong>，不是把主账户的历史搬过去。<u>复制的是"当前数据 + 对象定义"，不是"连带历史一起搬家"。</u></p>
+</blockquote>
+<h3>Data Clean Room</h3>
+<p>多方在不暴露各自原始数据的前提下做联合分析。</p>
+<h3>Native Apps</h3>
+<p>提供者把逻辑（不只是数据）打包成应用分发到 Marketplace，代码在消费者账户中运行且对消费者不可见。</p>
+<hr />
+</div></details>
+<details class="sec" id="n6"><summary><span class="stitle">Domain 6（跨域）：C03 新增内容 —— 你的题库覆盖不到的部分</span><span class="chev"></span></summary><div class="sbody">
+<blockquote>
+<p><strong>这一章是本次备考的最大盲区。</strong> 旧题库（2023–2024 的 C02 dump）几乎不含以下内容，但 COF-C03 考纲已把它们分散写进 Domain 1/2/3/4/5。
+官方考纲没有单独列"AI 域"，题目会伪装成架构题、性能题、治理题。看到陌生名词先归类到这一章。</p>
+</blockquote>
+<blockquote class="key">
+<p><strong>⚠️ 这一章的分类标准是「题库测不测得到」，不是「属于哪个域」。</strong>所以它<strong>不是</strong>考纲里的一个域——<strong>官方只有五个域</strong>，"Domain 6" 是我们自造的桶。它存在的唯一理由是：这些内容<strong>刷题补不上</strong>，必须单独安排三遍（8/16、8/22、8/27）。</p>
+<p>考试时它们各自回到自己的域：</p>
+<table>
+<thead>
+<tr><th>本章内容</th><th>考纲实际归属</th></tr>
+</thead>
+<tbody>
+<tr><td>Snowpark / Notebooks / Streamlit / Cortex / Snowflake ML</td><td><strong>Domain 1</strong>（1.6）</td></tr>
+<tr><td>Trust Center / Data Classification / 差分隐私 / Lineage</td><td><strong>Domain 2</strong></td></tr>
+<tr><td><strong>Dynamic Tables</strong> / Snowpipe Streaming / Git Integration</td><td><strong>Domain 3</strong>（3.2）</td></tr>
+<tr><td>Iceberg / QAS / Warehouse Gen2</td><td><strong>Domain 3 / 4</strong></td></tr>
+</tbody>
+</table>
+<p><strong>两个后果</strong>：① 精读 D1–D5 时遇到这些名词只会看到一句带过，<strong>完整内容在本章</strong>，各域已加指路；② <strong>8/23 模考的按域拆解表里没有"Domain 6"这一行</strong>，失分会分散计入五个域，必须逐题扫题干里的新名词单独计数（做法见冲刺计划·阶段三）。</p>
+</blockquote>
+<h3>1. Snowpark</h3>
+<ul>
+<li><strong>是什么</strong>：在 Snowflake 内部用 <strong>Python / Java / Scala</strong> 写数据处理逻辑的 DataFrame API。代码下推（push-down）成 SQL 在 Snowflake 引擎里跑，<strong>数据不出仓</strong>。</li>
+<li><strong>对比</strong>：Spark connector 是把数据<strong>搬出去</strong>算；Snowpark 是把<strong>计算搬进来</strong>。这是最常考的一句。</li>
+<li><strong>Snowpark-optimized warehouse</strong>：内存/CPU 加强型，用于大内存 UDF、ML 训练。<strong>普通 warehouse 也能跑 Snowpark</strong>，只有内存吃紧才需要换。</li>
+<li><strong>UDF / UDTF / Stored Procedure</strong> 都可以用 Python 写。Python 包来自内置的 <strong>Anaconda channel</strong>（无需自己装）。</li>
+<li><strong>Snowpark Container Services</strong>：跑容器化的长驻服务（需要 compute pool，不是 warehouse）。考点很浅，知道"跑容器、用 compute pool"即可。</li>
+</ul>
+<h3>2. Snowflake Notebooks</h3>
+<ul>
+<li>Snowsight 里的原生 notebook，cell 支持 <strong>SQL / Python / Markdown 混写</strong>，结果可直接互相引用。</li>
+<li>运行在 <strong>warehouse</strong>（或 container runtime）上，可加入 <strong>Git 仓库</strong>做版本管理，可被 <strong>Task 调度</strong>。</li>
+<li>权限走标准 RBAC，notebook 是 <strong>schema 级对象</strong>。</li>
+</ul>
+<h3>3. Streamlit in Snowflake (SiS)</h3>
+<ul>
+<li>用 Python 直接在 Snowflake 里建<strong>数据应用 UI</strong>，无需外部 web 服务器。</li>
+<li>应用在 <strong>owner's rights</strong> 或 <strong>caller's rights</strong> 下运行——考点：<strong>默认 owner's rights</strong>，意味着查看者看到的数据由应用所有者的权限决定。</li>
+<li>可通过 <strong>Native App</strong> 分发给其他账户。</li>
+</ul>
+<h3>4. Snowflake Cortex（AI/ML）★ 最可能出现的新考点</h3>
+<table>
+<thead>
+<tr>
+<th>分类</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Cortex LLM Functions</strong></td>
+<td>SQL 里直接调大模型：<code>COMPLETE</code>（通用生成）、<code>SUMMARIZE</code>、<code>TRANSLATE</code>、<code>SENTIMENT</code>、<code>EXTRACT_ANSWER</code>、<code>CLASSIFY_TEXT</code>、<code>EMBED_TEXT_*</code></td>
+</tr>
+<tr>
+<td><strong>Cortex Analyst</strong></td>
+<td>自然语言 → SQL。依赖 <strong>semantic model（YAML 语义模型文件）</strong>，不是直接问原始表</td>
+</tr>
+<tr>
+<td><strong>Cortex Search</strong></td>
+<td>托管的<strong>混合检索</strong>服务（向量 + 关键词），是做 RAG 的检索层。<strong>注意与 Search Optimization Service 完全不同</strong>——后者是加速 SQL 点查的，前者是文本语义检索</td>
+</tr>
+<tr>
+<td><strong>Document AI</strong></td>
+<td>从 PDF/图片等非结构化文档里抽取字段，可微调</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>计费</strong>：serverless，按 <strong>token</strong> 计费，不占用你的 warehouse（但 SQL 本身要 warehouse 执行）。</li>
+<li><strong>数据不出 Snowflake 边界</strong>——这是官方最强调的卖点，几乎必考。</li>
+<li>权限：使用 LLM 函数需要 <strong>SNOWFLAKE.CORTEX_USER</strong> database role（默认授予 PUBLIC，可回收）。</li>
+<li><strong>区域可用性有限</strong>，不可用区域需开启 <strong>cross-region inference</strong> 参数。</li>
+</ul>
+<blockquote class="key core">
+<p><strong>必须区分的三对</strong>：
+Cortex Search（语义检索）vs Search Optimization（SQL 点查加速）
+Cortex Analyst（NL→SQL，要语义模型）vs Cortex COMPLETE（通用 LLM 调用）
+Snowflake ML（建模）vs Cortex（调现成模型）</p>
+</blockquote>
+<h3>5. Snowflake ML</h3>
+<ul>
+<li><strong>ML Functions（无需写模型）</strong>：<code>FORECAST</code>（时序预测）、<code>ANOMALY_DETECTION</code>、<code>CONTRIBUTION_EXPLORER</code>（归因分析）、<code>CLASSIFICATION</code>。都是 SQL 调用、serverless。</li>
+<li><strong>Model Registry</strong>：在 Snowflake 里存模型版本、元数据，可直接 SQL 推理。</li>
+<li><strong>Feature Store</strong>：特征的集中定义与复用。</li>
+<li>考点极浅：知道"这些是 SQL 就能调的托管 ML，不用搬数据"。</li>
+</ul>
+<h3>6. Dynamic Tables ★</h3>
+<ul>
+<li><strong>声明式</strong>：你只写 <code>CREATE DYNAMIC TABLE ... TARGET_LAG = '5 minutes' WAREHOUSE = wh AS SELECT ...</code>，Snowflake 自动增量刷新。</li>
+<li><strong>替代</strong> Stream + Task 手写管道。考点：题目描述"想要低维护的增量 ELT" → Dynamic Table。</li>
+<li><strong>TARGET_LAG</strong> 是"数据最多落后多久"的目标，不是刷新间隔。也可设 <code>DOWNSTREAM</code>（由下游需求决定）。</li>
+<li>刷新模式：<strong>Incremental</strong>（增量，首选）或 <strong>Full</strong>（查询含不支持增量的构造时自动降级，成本高）。</li>
+<li><strong>计算</strong>：刷新用你在 <code>WAREHOUSE =</code> 里指定的 warehouse（也可选 serverless 模式，由 Snowflake 管资源）。<strong>关键不在用哪种算力，而在"刷新由 Snowflake 触发，不由你调度"</strong>。</li>
+<li>与物化视图的区别：MV 只能单表、不支持 JOIN；<strong>Dynamic Table 支持 JOIN、聚合、多表、链式</strong>。</li>
+</ul>
+<blockquote class="key core">
+<p><strong>★ Dynamic Table vs Stream + Task —— 最该记的一条：产出物的「所有权」不同。</strong></p>
+<table>
+<thead>
+<tr><th></th><th>Dynamic Table</th><th>Stream + Task</th></tr>
+</thead>
+<tbody>
+<tr><td>你写什么</td><td><strong>目标状态</strong>（一句 SELECT + TARGET_LAG）</td><td><strong>过程</strong>（MERGE/INSERT 逻辑 + CRON 调度）</td></tr>
+<tr><td>产出物</td><td><strong>Dynamic Table 本身</strong>，由定义查询决定内容</td><td><strong>普通表</strong></td></tr>
+<tr><td><strong>能不能改（DML）</strong></td><td><strong>不能</strong>。INSERT / UPDATE / DELETE 全部不允许，<strong>你只能查</strong></td><td><strong>能</strong>，随时 DML，它就是张普通表</td></tr>
+<tr><td>谁触发刷新</td><td><strong>Snowflake</strong>（按 TARGET_LAG 自己决定何时刷）</td><td><strong>你</strong>（Task 的 schedule）</td></tr>
+<tr><td>控制力</td><td>低（换来零维护）</td><td>高（换来你自己维护）</td></tr>
+</tbody>
+</table>
+<p><strong>为什么不能 DML</strong>：Dynamic Table 的内容<strong>完全由定义查询推导</strong>，Snowflake 要保证它随时都等于"那句 SELECT 现在的结果"。你手动改一行，下次刷新就会被覆盖掉——所以干脆禁止。<br>
+<strong>一句话</strong>：Stream + Task 是<strong>"你告诉它怎么做"</strong>，Dynamic Table 是<strong>"你告诉它要什么"</strong>。</p>
+</blockquote>
+<p><strong>选择题提示词（看到就能定选项）</strong>：</p>
+<table>
+<thead>
+<tr><th>题干出现</th><th>选</th></tr>
+</thead>
+<tbody>
+<tr><td><em>with minimal maintenance</em> / <em>declarative</em> / <em>simplest pipeline</em></td><td><strong>Dynamic Table</strong></td></tr>
+<tr><td><em>freshness requirement expressed as lag</em>（用"落后多久"表达新鲜度）</td><td><strong>Dynamic Table</strong>（<code>TARGET_LAG</code>）</td></tr>
+<tr><td><em>custom procedural logic</em> / <em>call stored procedure</em> / <em>conditional branching</em></td><td><strong>Stream + Task</strong></td></tr>
+<tr><td>需要对结果表<strong>手工修正 / 补录 / 打补丁</strong>（DML）</td><td><strong>Stream + Task</strong></td></tr>
+</tbody>
+</table>
+<p><strong>后两行是同一个道理的两面</strong>：凡是题干要求你<strong>"能插手"</strong>——不管是插手<strong>过程</strong>（存储过程、条件分支）还是插手<strong>结果</strong>（DML 改数据）——都只能是 Stream + Task。Dynamic Table 的全部卖点就是<strong>不许你插手</strong>，换来零维护。</p>
+<h3>7. Apache Iceberg Tables ★</h3>
+<ul>
+<li>开放表格式，<strong>数据和元数据存在你自己的云存储桶（external volume）</strong>，不在 Snowflake 内部存储。</li>
+<li><strong>两种目录（catalog）模式，必考</strong>：</li>
+<li><strong>Snowflake 作为 catalog</strong>：可读<strong>可写</strong>，性能接近原生表，支持 Time Travel、克隆等大部分特性</li>
+<li><strong>外部 catalog</strong>（AWS Glue / 外部 Iceberg REST / 对象存储文件）：<strong>只读</strong></li>
+<li>需要先建 <strong>EXTERNAL VOLUME</strong> 对象。</li>
+<li><strong>没有 Fail-safe</strong>。存储费付给云厂商，不付给 Snowflake。</li>
+<li><strong>Catalog Linked Database</strong>：自动同步外部 catalog 里的表。</li>
+<li>用途题眼："想让 Spark/其他引擎也能直接读同一份数据" → Iceberg。</li>
+</ul>
+<h3>8. Snowpipe Streaming</h3>
+<ul>
+<li><strong>行级</strong>直接写入，<strong>不需要先落文件到 stage</strong>，延迟秒级。</li>
+<li>与经典 Snowpipe 的对比（高频）：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Snowpipe</th>
+<th>Snowpipe Streaming</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>输入</td>
+<td>stage 上的<strong>文件</strong></td>
+<td>客户端 SDK 推送的<strong>行</strong></td>
+</tr>
+<tr>
+<td>延迟</td>
+<td>~1 分钟</td>
+<td><strong>秒级</strong></td>
+</tr>
+<tr>
+<td>计费</td>
+<td>计算量 + 每千文件开销</td>
+<td>按吞吐 + 客户端连接数</td>
+</tr>
+<tr>
+<td>触发</td>
+<td>云事件通知 / REST</td>
+<td>Java SDK / Kafka connector</td>
+</tr>
+</tbody>
+</table>
+<h3>9. Trust Center</h3>
+<ul>
+<li>Snowsight 里的<strong>安全态势管理</strong>面板，按 <strong>scanner package</strong> 定期扫描账户配置，给出风险发现与整改建议。</li>
+<li>内置包：<strong>Security Essentials</strong>（免费）、<strong>CIS Benchmarks</strong>、<strong>Threat Intelligence</strong>。</li>
+<li>需要 <strong>TRUST_CENTER_ADMIN / TRUST_CENTER_VIEWER</strong> application role。</li>
+<li>题眼："想自动发现没开 MFA 的用户 / 过宽的网络策略" → Trust Center，<strong>不是</strong> Access History。</li>
+</ul>
+<h3>10. Data Classification / Sensitive Data</h3>
+<ul>
+<li>自动扫描列内容，打上 <strong>system tag</strong>：<code>SEMANTIC_CATEGORY</code>（如 NAME、EMAIL）+ <code>PRIVACY_CATEGORY</code>（<strong>IDENTIFIER / QUASI-IDENTIFIER / SENSITIVE</strong>）。</li>
+<li>流程：<code>SYSTEM$CLASSIFY</code> 或自动分类（auto-classification，需 schema 级开启）→ 打 tag → 可接 <strong>tag-based masking policy</strong> 自动脱敏。</li>
+<li><strong>区分题</strong>：Object Tagging = 你<strong>手动</strong>打标签；Data Classification = Snowflake <strong>自动识别</strong>并打标签。官方样题考过。</li>
+</ul>
+<blockquote class="key core">
+<p><strong>★ 支持的列类型只有三大类<u>结构化</u>类型：数值（<code>NUMBER/DECIMAL/INT/FLOAT/DOUBLE</code>）· 字符串（<code>VARCHAR/CHAR/STRING/TEXT</code>）· 日期时间（<code>DATE/TIME/TIMESTAMP_*</code>）。</strong></p>
+<p><strong>判据：分类靠<u>逐值看内容像不像 PII</u>，所以列必须是「一列一个标量值」。</strong>→ <strong><code>VARIANT</code> / <code>OBJECT</code> / <code>ARRAY</code>（半结构化）和 <code>GEOGRAPHY</code> / <code>BINARY</code> 都不支持</strong>——里面是嵌套结构或二进制，没有可比对的标量模式。<u>另一个方向：能被 Masking Policy 遮的类型，基本就是能被分类的类型。</u></p>
+<p>⚠️ <strong>别因为「FLOAT 里不会有邮箱」就排除数值。</strong>数值列照样承载 PII：<code>AGE</code>、<code>SALARY</code>、纯数字的 <code>PHONE_NUMBER</code>、邮编、纬经度——<strong>它们多半被判为 <code>QUASI_IDENTIFIER</code></strong>。<u>问「支持哪些类型」是问技术能力，不是问「哪种最可能命中」。</u></p>
+</blockquote>
+<h3>11. Git Integration</h3>
+<ul>
+<li>Snowflake 可直接连 GitHub/GitLab 等仓库，把仓库作为一个 <strong>Git repository stage</strong> 挂进来。</li>
+<li>需要 <strong>API INTEGRATION</strong>（指向 git 域）+ 可选 <strong>SECRET</strong> 对象存凭证。</li>
+<li>用途：把 SQL 脚本、Streamlit 应用、Notebook 版本化，配合 <strong>EXECUTE IMMEDIATE FROM @repo/...</strong> 做 CI/CD。</li>
+</ul>
+<h3>12. 其他零散但已进考纲的</h3>
+<ul>
+<li><strong>Query Acceleration Service (QAS)</strong>：见 Domain 4。补充：用 <code>SYSTEM$ESTIMATE_QUERY_ACCELERATION</code> 评估收益，warehouse 上设 <code>ENABLE_QUERY_ACCELERATION</code> + <code>QUERY_ACCELERATION_MAX_SCALE_FACTOR</code>。</li>
+<li><strong>Budgets</strong>：比 Resource Monitor 更广——<strong>能覆盖 serverless 和存储成本</strong>，按月设支出上限并告警。Resource Monitor 只管 warehouse credit（这个对比是新增高频点）。</li>
+<li><strong>Organization / ORGADMIN</strong>：跨账户视图 <code>ORGANIZATION_USAGE</code>。</li>
+<li><strong>Snowflake Horizon</strong>：市场话术层的伞形品牌，把治理（tagging、classification、masking、Trust Center、Access History、Data Quality）打包命名。看到这个词知道指"治理全家桶"即可。</li>
+<li><strong>Data Metric Functions (DMF)</strong>：内置或自定义的数据质量指标（如 NULL 数、重复数），可绑定到表并按 schedule 自动评估，结果进 <code>DATA_QUALITY_MONITORING_RESULTS</code>。</li>
+<li><strong>Cost Insights / Account Usage 新视图</strong>：了解即可。</li>
+</ul>
+<h3>13. 补遗（8/13 补入）</h3>
+<ul>
+<li><strong>Warehouse Gen1 / Gen2</strong>：标准 warehouse 的新一代硬件，单位算力更强、分析查询更快，价格与 Gen1 不同。考试层面只需知道"Standard warehouse 分 Gen1/Gen2，Gen2 性能更高"。</li>
+<li><strong>Privacy Policies / 差分隐私</strong>：对<strong>聚合查询结果加噪声</strong>，防止靠反复查询反推出个体记录。用于共享敏感数据集。题眼："共享数据但不能泄露个体" → 差分隐私，<strong>不是</strong> masking policy（masking 是遮列，差分隐私是扰动聚合值）。</li>
+<li><strong>Data Lineage</strong>：Snowsight 里可视化上下游依赖（哪张表来自哪张表）。<strong>三兄弟区分</strong>：Lineage = 数据从哪来到哪去；<strong>Access History</strong> = 谁访问过什么；<strong>Object Dependencies</strong> = 对象间的引用关系（删表会不会连坐）。</li>
+<li><strong>措辞变化</strong>：C03 考纲全篇用 <strong>“Snowflake AI Data Cloud”</strong>，不再是 “Cloud Data Platform”。题干里出现不用慌，是同一个东西。</li>
+</ul>
+<blockquote class="key">
+<p><strong>明确不考，别花时间（考纲白纸黑字）</strong>：<br>
+① <strong>Openflow</strong>（基于 Apache NiFi 的数据集成服务）——全球 GA 前不考，知道有这么个名字即可<br>
+② <strong>Notebooks 的默认 warehouse</strong>——同上<br>
+③ <strong>Hybrid Tables / Unistore</strong>——<strong>C03 考纲中根本未列出</strong>，一分钟都别投<br>
+这三条是<strong>省时间</strong>用的：复习到这些名词时直接跳过，不要因为"没见过"而心虚回头补。</p>
+</blockquote>
+<blockquote>
+<p>⚠️ Cortex 与 ML 部分的函数名和区域可用性在 2025–2026 间变动频繁。上面是主干，<strong>考前用官方 docs 的 "Cortex LLM Functions" 页扫一眼函数列表</strong>，确认没有新增/更名。</p>
+</blockquote>
+<hr />
+</div></details>
+<details class="sec keepall" id="n7"><summary><span class="stitle">高频易错清单 · 第二部分（C03 新增，共 10 条）</span><span class="chev"></span></summary><div class="sbody">
+<ol start="16">
+<li><strong>Snowpark = 计算搬进来；Spark connector = 数据搬出去</strong></li>
+<li><strong>Cortex Search（语义检索）≠ Search Optimization Service（SQL 点查加速）</strong></li>
+<li><strong>Cortex Analyst 需要 semantic model（YAML），不是直接问原始表</strong></li>
+<li><strong>Cortex 按 token 计费，serverless，数据不出 Snowflake</strong></li>
+<li><strong>Dynamic Table 支持 JOIN/多表，物化视图只能单表无 JOIN</strong></li>
+<li><strong>Dynamic Table 不能做 DML（只能查）；Stream+Task 产出的是普通表，随时能改</strong></li>
+<li><strong>TARGET_LAG 是"最多落后多久"，不是刷新周期</strong></li>
+<li><strong>Iceberg：Snowflake 作 catalog → 可写；外部 catalog → 只读</strong></li>
+<li><strong>Iceberg 数据在你自己的 external volume，没有 Fail-safe</strong></li>
+<li><strong>Snowpipe Streaming 是行级、无文件、秒级；Snowpipe 是文件级、~1 分钟</strong></li>
+<li><strong>Budgets 覆盖 serverless + 存储；Resource Monitor 只管 warehouse credit</strong></li>
+</ol>
+<p>（附：<strong>Object Tagging = 手动打标；Data Classification = 自动识别打标</strong>——这条已在 Domain 2，但极易错，重复一次。）</p>
+<hr />
+</div></details>
+<details class="sec keepall" id="n8"><summary><span class="stitle">高频易错清单 · 第一部分（16 条，原有域）</span><span class="chev"></span></summary><div class="sbody">
+<ol>
+<li><strong>ACCOUNT_USAGE vs INFORMATION_SCHEMA</strong> —— 延迟、保留期、是否含已删除对象</li>
+<li><strong>Scale up vs scale out</strong> —— 慢 vs 排队</li>
+<li><strong>三种缓存</strong> —— 尤其结果缓存的命中条件和"不花 credit"</li>
+<li><strong>Fail-safe 只有永久表有，7 天，用户不可自助恢复</strong></li>
+<li><strong>Transient/Temporary 没有 Fail-safe</strong></li>
+<li><strong>物化视图、多集群、90天TT、动态脱敏 = Enterprise 起</strong></li>
+<li><strong>文件加载最佳大小 100–250 MB 压缩后</strong></li>
+<li><strong>卸载只支持 CSV/JSON/Parquet</strong></li>
+<li><strong>共享用 secure view，不能用普通 view</strong></li>
+<li><strong>Reader account 的计算费用由提供者承担</strong></li>
+<li><strong>自定义角色要挂到 SYSADMIN 下</strong></li>
+<li><strong>ownership / privilege 判断题，先看主语是 user 还是 role</strong> —— 出现 “user owns” / “granted directly to a user” 即 False（见 Domain 2 口诀「用户只借身份，角色才是主人」）</li>
+<li><strong>Resource Monitor 只管 warehouse credit，不管存储</strong></li>
+<li><strong>Micro-partition 50–500 MB 未压缩，不可变</strong></li>
+<li><strong>Cloud Services 层超出计算用量 10% 才收费</strong></li>
+<li><strong>VARIANT 单值上限 16 MB</strong></li>
+<li><strong>接口任选，权限说话</strong> —— 客户端（Snowsight / SnowSQL / 驱动 / REST）<strong>并行可用、无需向 Support 申请</strong>；权限由 RBAC 决定。题干里 <em>“contact Snowflake Support to enable”</em> 几乎都是陷阱</li>
+</ol>
+<hr />
+</div></details>
+<details class="sec" id="n9"><summary><span class="stitle">附录：英文题干关键词与术语对照</span><span class="chev"></span></summary><div class="sbody">
+<blockquote>
+<p>考试为英文。你不会丢分在 <code>micro-partition</code> 上，会丢在<strong>限定词</strong>和<strong>干扰项措辞</strong>上。
+用法：8/13 扫一遍建立敏感度，之后每次开刷前扫 3 分钟，考前和 26 条清单一起过。</p>
+</blockquote>
+<h3>A0. 会把句子读反的短语 —— 最贵的一类错</h3>
+<blockquote class="key">
+<p><strong>这类错和知识无关</strong>：你知道答案，但把题干读反了，于是<strong>笃定地选错</strong>。比不会做更亏，因为不会做至少会犹豫。<br>
+<strong>处理方式：看到下列短语，先在脑子里把整句翻成中文再判断，不要凭语感。</strong></p>
+</blockquote>
+<table class="core">
+<thead>
+<tr><th>英文</th><th>正确含义</th></tr>
+</thead>
+<tbody>
+<tr><td><strong><code>in lieu of</code></strong></td><td><strong>而不是</strong>（= instead of）</td></tr>
+<tr><td><code>as opposed to</code></td><td>而不是（对比前者）</td></tr>
+<tr><td><code>other than</code></td><td><strong>除……之外</strong>（排除）</td></tr>
+<tr><td><code>rather than</code></td><td>而不是</td></tr>
+<tr><td><code>short of</code></td><td>除非做到 / 达不到</td></tr>
+<tr><td><code>barring</code> / <code>absent</code></td><td><strong>除非有 / 在没有……的情况下</strong></td></tr>
+<tr><td><code>notwithstanding</code></td><td>尽管（= despite）</td></tr>
+<tr><td><code>all but</code></td><td><strong>几乎（= almost）</strong></td></tr>
+<tr><td><code>cannot be overstated</code></td><td>再怎么强调也不为过（<strong>肯定</strong>）</td></tr>
+</tbody>
+</table>
+<p><strong>范例（真题级）</strong>：<em>“Snowflake's data warehouse is built from the ground up for the cloud, <u>in lieu of</u> being based on an existing database or platform such as Hadoop.”</em><br>
+→ 翻译：<strong>"……为云从零打造，而不是以某个已有数据库或平台（如 Hadoop）为基础。"</strong> → <strong>True</strong>。<br>
+读成"借助于 Hadoop"就会选 False，而这一句的知识点（Snowflake 不是基于 Hadoop 改的）你本来就会。</p>
+<h3>A. 限定词（Qualifiers）—— 看到就圈出来</h3>
+<p>同一道题的四个选项可能<strong>都是正确做法</strong>，限定词决定选哪个。这是 SnowPro 最主要的失分点。</p>
+<table>
+<thead>
+<tr>
+<th>英文</th>
+<th>含义</th>
+<th>它在暗示什么答案</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>MOST granular / finest</strong></td>
+<td><strong>最细粒度</strong>（granule = 颗粒）<br>coarse-grained = 粗粒度<br><strong>granularity = 「最小算到什么单位」</strong>，如 <em>per-second/per-core granularity</em> = 时间算到秒、资源算到核</td>
+<td>选<strong>最小的那个层级</strong>。如 <code>DATA_RETENTION_TIME_IN_DAYS</code> 四层都能设 → 答 <strong>Table</strong>，不是 Database。<strong>没有这个词时四个选项可能全对，限定词才是唯一筛选条件</strong></td>
+</tr>
+<tr>
+<td><strong>MINIMUM edition / version</strong></td>
+<td>最低要求</td>
+<td>选<strong>够用的最低那档</strong>，不是功能最全那档。如 Secure Data Sharing → <strong>Standard</strong>（Enterprise 也有，但不是最低）。<br>⚠️ <strong>反过来：<code>available with Enterprise</code> 问的是「用得上吗」，Standard 的功能<u>也算对</u></strong>（版本向上累积）；只有 <code>only in</code> / <code>requires</code> / <code>minimum</code> 才是问起步档</td>
+</tr>
+<tr>
+<td><strong>PRIMARY / MAIN purpose</strong></td>
+<td>主要用途</td>
+<td>核心功能，<strong>不是附带效果</strong></td>
+</tr>
+<tr>
+<td><strong>FIRST step</strong></td>
+<td>第一步</td>
+<td>顺序题，注意先后而非对错</td>
+</tr>
+<tr>
+<td><strong>NOT / EXCEPT</strong></td>
+<td>反选</td>
+<td>找<strong>错的那个</strong>——三个对一个错，别顺手选第一个正确的</td>
+</tr>
+<tr>
+<td><strong>dedicated</strong></td>
+<td>专用的、专门指派的</td>
+<td><strong>诱导你只否定「专用」这一层</strong>。如「Snowpipe 需要 dedicated warehouse？」→ 不是「共享一个就行」，而是<strong>压根不需要 warehouse</strong>。<strong>看到 dedicated，先问「这东西根本需不需要」</strong></td>
+</tr>
+<tr>
+<td><strong>名词中心词</strong>：<code>execution <u>plan</u></code> / <code><u>physical</u> storage</code> / <code>metadata <u>about</u></code></td>
+<td>不是限定词，是<strong>词组的重心</strong></td>
+<td><strong>重心在最后那个名词上，不在你先认出来的那个词上。</strong><code>execution plan</code> → 出计划 = <strong>Cloud Services</strong>（不是 execution → Compute）；<code>physical storage</code> → <strong>Storage</strong>；<code>metadata about X</code> → <strong>Cloud Services</strong>。<strong>看到 execution 别急着选 Compute，先看它后面还有没有词</strong></td>
+</tr>
+<tr>
+<td><strong>MOST cost-effective</strong></td>
+<td>最省钱</td>
+<td>倾向 serverless / 更小 warehouse / transient 表 / 结果缓存</td>
+</tr>
+<tr>
+<td><strong>MOST efficient / performant</strong></td>
+<td>最快</td>
+<td>倾向 clustering / SOS / QAS / 加大 warehouse；加载场景倾向 <strong>Snowpipe auto-ingest</strong>（事件驱动）而非 Task + COPY（轮询）。<strong>「能用」的选项技术上没错，但比较级要的是「最」</strong></td>
+</tr>
+<tr>
+<td><strong>BEST practice</strong></td>
+<td>官方推荐做法</td>
+<td>不是"能跑通"，是文档里写的那个（如自定义角色挂 SYSADMIN）</td>
+</tr>
+<tr>
+<td><strong>LEAST amount of effort / operational overhead</strong></td>
+<td>最省人力</td>
+<td><strong>强烈倾向托管/声明式方案</strong>：Dynamic Table &gt; Stream+Task；Snowpipe &gt; 手写 COPY 调度</td>
+</tr>
+<tr>
+<td><strong>without additional cost</strong></td>
+<td>不额外花钱</td>
+<td>结果缓存、元数据缓存、克隆、MFA、Time Travel（保留期内）</td>
+</tr>
+<tr>
+<td><strong>without any additional configuration</strong></td>
+<td>开箱即用</td>
+<td>排除需要建 integration / <strong>policy</strong> / external volume 的选项。<strong>凡是要「选版本」的功能，基本都要配置</strong>（脱敏、行访问、Tri-Secret…）</td>
+</tr>
+<tr>
+<td><strong>automatically</strong></td>
+<td>自动</td>
+<td>排除需要人工触发的选项（如手动 REFRESH）</td>
+</tr>
+<tr>
+<td><strong>near real-time / lowest latency</strong></td>
+<td>最低延迟</td>
+<td>Snowpipe Streaming（秒级）&gt; Snowpipe（~1 min）&gt; Task 调度</td>
+</tr>
+<tr>
+<td><strong>minimal impact on running queries</strong></td>
+<td>不影响在跑的查询</td>
+<td>改 warehouse 大小只对<strong>新查询</strong>生效；Suspend（非 Immediate）让查询跑完</td>
+</tr>
+<tr>
+<td><strong>must / requires / required</strong></td>
+<td>硬性要求</td>
+<td>找唯一必要条件，不是"推荐"。<strong>反向陷阱：把一条 best practice 写成 <code>requires</code> → False</strong>（例：「加载<u>要求</u>文件 ≤ 16 MB」= False，源文件不限大小，100–250 MB 只是建议）</td>
+</tr>
+<tr>
+<td><strong>ALWAYS / NEVER</strong></td>
+<td>绝对表述</td>
+<td>选项里出现绝对词，<strong>通常是错的</strong>（但题干里的要认真对待）。<br><strong><code>both</code> / <code>all</code> 是最爱用的一个字</strong>：「internal 和 external stage <u>都</u>计存储费」= False（只有 internal）。<strong>看到 both，把两边分开各判一次。</strong><br><strong>已知例外（背下来）</strong>：「<u>所有</u>微分区的<u>所有</u>列都自动收集元数据」= <strong>True</strong>；「数据<u>始终</u>加密（静态+传输）」= <strong>True</strong>；「Federated/SSO 在<u>所有版本</u>都支持」= <strong>True</strong>。<br><strong>判据：属于「架构根基」或「基础安全」的绝对表述是真的；涉及功能档次、配置、上限的才是陷阱</strong></td>
+</tr>
+<tr>
+<td><strong>MAY / CAN / AT TIMES / SOMETIMES / IN SOME CASES</strong></td>
+<td>软化措辞（绝对词的反面）</td>
+<td><strong>只要存在一种情况成立，整句就是 True</strong>——不用去证明「每次都这样」。<br>例：「大仓库<u>有时可能</u>启动更慢」= <strong>True</strong>（通常有预热池，秒级；但资源紧张时会慢）。<br><strong>口诀：看到 may/at times 找一个成立的例子；看到 always/never 才去找反例。</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Select all that apply / Which TWO / Which THREE</strong>
+→ 题目会明说选几个。<strong>选够数量才计分，少选不给分。</strong> 第一遍做题时先把数字圈出来。</p>
+<h3>B. 高频干扰项措辞 —— 听起来对，实际错</h3>
+<p>这些句子会反复出现在错误选项里。<strong>认出措辞就能直接排除，不用重新推理。</strong></p>
+<table>
+<thead>
+<tr>
+<th>英文措辞</th>
+<th>为什么通常是错的</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>requires a running warehouse</code></td>
+<td>结果缓存命中、元数据查询（COUNT/MIN/MAX）<strong>不需要</strong> warehouse</td>
+</tr>
+<tr>
+<td><code>incurs additional storage costs</code></td>
+<td>Zero-copy clone <strong>初始不占</strong>额外存储；改动才产生</td>
+</tr>
+<tr>
+<td><code>data is copied to the consumer</code></td>
+<td>Secure Data Sharing <strong>不复制数据</strong>，只共享元数据引用</td>
+</tr>
+<tr>
+<td><code>the provider pays for compute</code></td>
+<td>只有 <strong>Reader Account</strong> 是提供者付；普通消费者用自己的 warehouse</td>
+</tr>
+<tr>
+<td><code>available in Standard Edition</code></td>
+<td>物化视图、多集群、90 天 TT、动态脱敏、SOS 都是 <strong>Enterprise 起</strong></td>
+</tr>
+<tr>
+<td><code>Time Travel can recover data after Fail-safe</code></td>
+<td>顺序反了：Active → Time Travel → Fail-safe</td>
+</tr>
+<tr>
+<td><code>users can query Fail-safe data</code></td>
+<td>Fail-safe <strong>只能 Snowflake 支持人员</strong>恢复</td>
+</tr>
+<tr>
+<td><code>transient tables have Fail-safe</code></td>
+<td>Transient / Temporary <strong>都没有</strong></td>
+</tr>
+<tr>
+<td><code>increase warehouse size to reduce queuing</code></td>
+<td>排队要 <strong>scale out</strong>（多集群），不是 scale up</td>
+</tr>
+<tr>
+<td><code>add more clusters to speed up a single query</code></td>
+<td>反过来：单查询慢要 <strong>scale up</strong></td>
+</tr>
+<tr>
+<td><code>clustering key should be a unique / high-cardinality column</code></td>
+<td>应选<strong>低到中基数</strong>列（UUID 是典型错误答案）</td>
+</tr>
+<tr>
+<td><code>Resource Monitor can limit storage costs</code></td>
+<td>只管 <strong>warehouse credit</strong>；要覆盖存储/serverless 用 <strong>Budgets</strong></td>
+</tr>
+<tr>
+<td><code>INFORMATION_SCHEMA includes dropped objects</code></td>
+<td>只含<strong>当前存在</strong>的对象；ACCOUNT_USAGE 才含已删除</td>
+</tr>
+<tr>
+<td><code>ACCOUNT_USAGE_HISTORY</code> / <code>ACCOUNT_USAGE_METRICS</code></td>
+<td><strong>编造的视图名，不存在。</strong>真实的是 <code>STORAGE_USAGE</code> / <code>DATABASE_STORAGE_USAGE_HISTORY</code> / <code>STAGE_STORAGE_USAGE_HISTORY</code> / <code>TABLE_STORAGE_METRICS</code></td>
+</tr>
+<tr>
+<td><code>DATA_SHARE = TRUE</code> 之类的开关</td>
+<td><strong>编造的参数。</strong>识别法：<strong>①</strong> 说不出它挂在哪个对象的 <code>CREATE</code>/<code>ALTER</code> 上；<strong>②</strong> 它把一个<u>独立对象</u>（SHARE）降级成布尔开关 → 八成是编的。<br>真参数长这样：<code>AUTO_SUSPEND</code>、<code>AUTO_RESUME</code>、<code>DATA_RETENTION_TIME_IN_DAYS</code>、<code>ENABLE_QUERY_ACCELERATION</code>、<code>CHANGE_TRACKING</code></td>
+</tr>
+<tr>
+<td><code>只能用 SQL</code> / <code>只能在 UI 里做</code></td>
+<td><strong>Snowflake 的管理操作基本都有两条路：Snowsight UI 和 SQL。</strong>问「怎么创建/配置 XX」时，<strong>UI 与 SQL 通常都对</strong>（SnowSQL CLI、REST API、各语言 connector 本质也是发 SQL）。<strong>看到「只能…」先怀疑</strong></td>
+</tr>
+<tr>
+<td><code>ACCOUNT_USAGE has no latency</code></td>
+<td>有 <strong>45 min – 3 h</strong> 延迟</td>
+</tr>
+<tr>
+<td><code>USE_METADATA_CACHE</code></td>
+<td><strong>此参数不存在</strong>（真的是 <code>USE_CACHED_RESULT</code>）</td>
+</tr>
+<tr>
+<td><code>SERVERLESS_FEATURES_SIZE</code></td>
+<td><strong>此参数不存在</strong>；serverless 尺寸不可配置</td>
+</tr>
+<tr>
+<td><code>key partitions</code> / <code>partition keys</code></td>
+<td><strong>不存在。</strong>真的只有两个词：<strong>micro-partition</strong>（存储单元）和 <strong>clustering key</strong>（排序依据）。<strong>词序颠倒 / 两词混搭 = 编的</strong></td>
+</tr>
+<tr>
+<td><code>DROP FILE</code> / <code>DELETE LOAD HISTORY</code></td>
+<td><strong>不存在。</strong>删 stage 文件用 <code>REMOVE</code>；<code>DROP</code> 的宾语必须是 <code>CREATE</code> 能造出来的对象</td>
+</tr>
+<tr>
+<td><code>users can only reuse their own cached results</code></td>
+<td>Result Cache <strong>账户级共享</strong>，只看权限</td>
+</tr>
+<tr>
+<td><code>a standard view can be shared</code></td>
+<td>共享<strong>必须</strong>用 secure view</td>
+</tr>
+<tr>
+<td><code>the consumer can reshare the data</code></td>
+<td>默认 <strong>no reshare</strong></td>
+</tr>
+<tr>
+<td><code>Snowpipe loads data in real time</code></td>
+<td>是<strong>微批</strong>，~1 分钟；真实时要 Snowpipe Streaming</td>
+</tr>
+<tr>
+<td><code>changing warehouse size affects running queries</code></td>
+<td>只对<strong>新查询</strong>生效</td>
+</tr>
+<tr>
+<td><code>PUT can be run from a Snowsight worksheet</code></td>
+<td>PUT/GET <strong>只能</strong>用 SnowSQL / 驱动</td>
+</tr>
+<tr>
+<td><code>must contact Snowflake Support to enable UI access</code><br><code>… unless explicitly granted by Support</code></td>
+<td>接口<strong>并行可用、无需申请</strong>；能做什么由 <strong>RBAC</strong> 决定。<strong>“联系 Support”几乎都是陷阱</strong>（真需要的只有 Tri-Secret、PrivateLink、部分预览功能）</td>
+</tr>
+<tr>
+<td><code>unload supports Avro / ORC / XML</code></td>
+<td>卸载只支持 <strong>CSV / JSON / Parquet</strong></td>
+</tr>
+<tr>
+<td><code>materialized views support JOINs</code></td>
+<td>MV <strong>只能单表</strong>；要 JOIN 用 <strong>Dynamic Table</strong></td>
+</tr>
+<tr>
+<td><code>data must be moved out of Snowflake</code></td>
+<td>Snowpark / Cortex / ML 的卖点就是<strong>数据不出仓</strong></td>
+</tr>
+<tr>
+<td><code>custom roles should be granted to ACCOUNTADMIN</code></td>
+<td>应挂到 <strong>SYSADMIN</strong> 下</td>
+</tr>
+<tr>
+<td><code>whitelist takes precedence over blacklist</code></td>
+<td>Network Policy <strong>黑名单优先</strong></td>
+</tr>
+<tr>
+<td><code>external Iceberg catalog tables are writable</code></td>
+<td>外部 catalog → <strong>只读</strong>；Snowflake 作 catalog 才可写</td>
+</tr>
+</tbody>
+</table>
+<h3>C. 场景行话（题干里出现，需要立刻翻译成动作）</h3>
+<table>
+<thead>
+<tr>
+<th>英文</th>
+<th>中文</th>
+<th>触发的答案方向</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>spillage / spilled to local (remote) storage</strong></td>
+<td>内存溢出</td>
+<td>加大 warehouse（remote 更严重）</td>
+</tr>
+<tr>
+<td><strong>queuing / queued queries</strong></td>
+<td>查询排队</td>
+<td>多集群 scale out</td>
+</tr>
+<tr>
+<td><strong>pruning / partitions scanned vs total</strong></td>
+<td>剪枝率</td>
+<td>clustering key 或改写 WHERE</td>
+</tr>
+<tr>
+<td><strong>point lookup / highly selective filter</strong></td>
+<td>点查</td>
+<td>Search Optimization Service</td>
+</tr>
+<tr>
+<td><strong>exploding join / row explosion</strong></td>
+<td>笛卡尔积</td>
+<td>JOIN 条件写错</td>
+</tr>
+<tr>
+<td><strong>bursty / spiky workload</strong></td>
+<td>波动负载</td>
+<td>auto-scale 多集群 + auto-suspend</td>
+</tr>
+<tr>
+<td><strong>concurrent users / high concurrency</strong></td>
+<td>高并发</td>
+<td>多集群（Maximized 用于可预测高并发）</td>
+</tr>
+<tr>
+<td><strong>ad hoc query</strong></td>
+<td>临时查询</td>
+<td>QAS / 大尺寸单集群</td>
+</tr>
+<tr>
+<td><strong>churn / data drift</strong></td>
+<td>数据频繁变动</td>
+<td>重聚簇成本考量</td>
+</tr>
+<tr>
+<td><strong>idle / auto-suspend</strong></td>
+<td>空闲挂起</td>
+<td>挂起会<strong>清空本地缓存</strong></td>
+</tr>
+<tr>
+<td><strong>stale data / TARGET_LAG</strong></td>
+<td>数据可容忍的落后</td>
+<td>Dynamic Table</td>
+</tr>
+<tr>
+<td><strong>backfill / historical load</strong></td>
+<td>历史批量加载</td>
+<td>COPY INTO（非 Snowpipe）</td>
+</tr>
+<tr>
+<td><strong>incremental / CDC</strong></td>
+<td>增量捕获</td>
+<td>Stream + Task 或 Dynamic Table</td>
+</tr>
+<tr>
+<td><strong>at rest / in transit</strong></td>
+<td>静态 / 传输中</td>
+<td>全程 AES-256 加密</td>
+</tr>
+<tr>
+<td><strong>least privilege</strong></td>
+<td>最小权限</td>
+<td>自定义角色 + 精确 GRANT，不给 ACCOUNTADMIN</td>
+</tr>
+<tr>
+<td><strong>onboard a consumer without a Snowflake account</strong></td>
+<td>消费者没有账户</td>
+<td><strong>Reader Account</strong></td>
+</tr>
+<tr>
+<td><strong>cross-region / cross-cloud share</strong></td>
+<td>跨区域跨云共享</td>
+<td>replication 或 listing 自动复制（Direct Share 做不到）</td>
+</tr>
+</tbody>
+</table>
+<h3>D. 术语中英对照</h3>
+<p>考题只会出英文，笔记正文以中文为主——这张表用来对上号：</p>
+<table>
+<thead>
+<tr>
+<th>英文</th>
+<th>中文</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>separation of storage and compute</td>
+<td>存算分离</td>
+</tr>
+<tr>
+<td>pruning</td>
+<td>剪枝</td>
+</tr>
+<tr>
+<td>micro-partition / immutable</td>
+<td>微分区 / 不可变</td>
+</tr>
+<tr>
+<td>clustering key / reclustering</td>
+<td>聚簇键 / 重聚簇</td>
+</tr>
+<tr>
+<td>retention period</td>
+<td>保留期</td>
+</tr>
+<tr>
+<td>result cache / local disk (warehouse) cache / metadata cache</td>
+<td>结果缓存 / 本地磁盘缓存 / 元数据缓存</td>
+</tr>
+<tr>
+<td>scale up (resize) / scale out (multi-cluster)</td>
+<td>纵向扩展 / 横向扩展</td>
+</tr>
+<tr>
+<td>auto-suspend / auto-resume</td>
+<td>自动挂起 / 自动恢复</td>
+</tr>
+<tr>
+<td>scaling policy (Standard / Economy)</td>
+<td>伸缩策略</td>
+</tr>
+<tr>
+<td>RBAC (role-based access control)</td>
+<td>角色访问控制</td>
+</tr>
+<tr>
+<td>DAC (discretionary access control)</td>
+<td>自主访问控制</td>
+</tr>
+<tr>
+<td>secondary roles</td>
+<td>次要角色</td>
+</tr>
+<tr>
+<td>database roles</td>
+<td>数据库角色</td>
+</tr>
+<tr>
+<td>Dynamic Data Masking (masking policy)</td>
+<td>动态数据脱敏</td>
+</tr>
+<tr>
+<td>row access policy</td>
+<td>行访问策略</td>
+</tr>
+<tr>
+<td>external tokenization</td>
+<td>外部令牌化</td>
+</tr>
+<tr>
+<td>object tagging / tag-based masking</td>
+<td>对象标签 / 基于标签的脱敏</td>
+</tr>
+<tr>
+<td>data classification</td>
+<td>数据分类</td>
+</tr>
+<tr>
+<td>Access History / Object Dependencies</td>
+<td>访问历史 / 对象依赖</td>
+</tr>
+<tr>
+<td>hierarchical key model</td>
+<td>分层密钥模型</td>
+</tr>
+<tr>
+<td>key rotation / rekeying</td>
+<td>密钥轮换 / 重新加密</td>
+</tr>
+<tr>
+<td>federated authentication (SSO, SAML 2.0)</td>
+<td>联合身份认证</td>
+</tr>
+<tr>
+<td>key-pair authentication</td>
+<td>密钥对认证</td>
+</tr>
+<tr>
+<td>storage integration</td>
+<td>存储集成</td>
+</tr>
+<tr>
+<td>named internal stage</td>
+<td>命名内部暂存区</td>
+</tr>
+<tr>
+<td>CDC (change data capture)</td>
+<td>变更数据捕获</td>
+</tr>
+<tr>
+<td>append-only stream</td>
+<td>仅追加流</td>
+</tr>
+<tr>
+<td>declarative</td>
+<td>声明式</td>
+</tr>
+<tr>
+<td>incremental refresh</td>
+<td>增量刷新</td>
+</tr>
+<tr>
+<td>external volume</td>
+<td>外部卷</td>
+</tr>
+<tr>
+<td>catalog</td>
+<td>目录</td>
+</tr>
+<tr>
+<td>secure view</td>
+<td>安全视图</td>
+</tr>
+<tr>
+<td>Data Exchange</td>
+<td>数据交换</td>
+</tr>
+<tr>
+<td>private / public listing</td>
+<td>私有 / 公开列表</td>
+</tr>
+<tr>
+<td>replication / failover / failback</td>
+<td>复制 / 故障转移 / 故障恢复</td>
+</tr>
+<tr>
+<td>data clean room</td>
+<td>数据洁净室</td>
+</tr>
+<tr>
+<td>Native App</td>
+<td>原生应用</td>
+</tr>
+<tr>
+<td>semantic model</td>
+<td>语义模型</td>
+</tr>
+<tr>
+<td>hybrid search</td>
+<td>混合检索</td>
+</tr>
+<tr>
+<td>push-down</td>
+<td>下推</td>
+</tr>
+<tr>
+<td>compute pool</td>
+<td>计算池</td>
+</tr>
+<tr>
+<td>Data Metric Function (DMF)</td>
+<td>数据质量指标</td>
+</tr>
+</tbody>
+</table>
+<h3>E. 考场执行清单（答题时）</h3>
+<ol>
+<li><strong>先找限定词，再看选项</strong>（most granular / least / minimum / maximum / not / except / primary / first），以及<strong>要选几个</strong>。<strong>很多题四个选项本身都对，限定词是唯一筛选条件</strong>——限定词常藏在句子中间不起眼处</li>
+<li>看到 <code>in lieu of</code> / <code>other than</code> / <code>rather than</code> / <code>barring</code> 等<strong>会翻转句意的短语</strong>，<strong>停一秒把整句翻成中文</strong>再判断，别凭语感（见 A0）</li>
+<li>扫选项，先用 B 表的措辞<strong>直接排除</strong>明显错的</li>
+<li>剩下的用 C 表把行话翻译成动作方向</li>
+<li>犹豫超过 90 秒 → 标记跳过，第二遍再回来</li>
+<li><strong>不留空题</strong>，没有倒扣</li>
+</ol>
+<hr />
+</div></details>
+<details class="sec" id="n10"><summary><span class="stitle">建议用法</span><span class="chev"></span></summary><div class="sbody">
+<ul>
+<li>第一遍<strong>通读</strong>，不求记住，求"见过"（约 40 分钟）</li>
+<li><strong>建框架期（8/13–8/14）读到抽象处，用题库的「背题模式」按关键词搜 3–5 道题</strong>看考点怎么问，再回来读笔记。把题库当<strong>词典</strong>用，不顺序刷——这不消耗 8/15 之后连续区块的诊断价值</li>
+<li>之后每天刷题前花 10 分钟扫一遍表格</li>
+<li>刷题时凡是这份笔记里没有的知识点，<strong>补写进来</strong>，让它变成你自己的错题知识库</li>
+<li>考前一天只看两份"高频易错清单"（16 + 10 = 26 条）</li>
+<li><strong>C03 新增章节要单独过 2–3 遍</strong>：旧题库覆盖不到，只能靠笔记和官方文档</li>
+</ul></div></details><div class="nores hide">没有匹配的章节</div></section>
+  <section class="pane" id="plan"><div class="pagetitle">SnowPro Core 冲刺计划（修订版）</div><details class="sec meta"><summary><span class="stitle">题头：考试信息 · 约束 · 核心思路</span><span class="chev"></span></summary><div class="sbody">
+<p><strong>考试：2026/8/29（周六）15:45　线下考场</strong>
+<strong>起点：8/12（周三）夜，47% 正确率，1452 题已做 119 题（集中在 1421–1452 一带）</strong></p>
+<blockquote>
+<p>✅ <strong>答题记录已于 8/15 开刷前清空</strong>，旧的 119 题（47%）已隔离，只保留 47% 这个基线数字。此事结清，不再展开。</p>
+</blockquote>
+<p><strong>行政事项状态（8/12 已清）</strong></p>
+<ul>
+<li>✅ <strong>不改期，8/29 是唯一一次</strong>（8/13 决定）。9/13 马尔代夫船宿之后回来已是十月，Advanced DA 要在 11 月底前考完，链条经不起再推一次。改期条款不再是计划输入，<strong>不必再查</strong>（仅在生病/交通瘫痪等不可抗力时才需要，届时再说）</li>
+<li>✅ <strong>证件</strong>：护照 + 在留カード 就绪，姓名拼写一致</li>
+<li>✅ <strong>题库有手机 App</strong>：确认能离线用即可（飞行模式试一分钟）；笔记 md 存进手机本地笔记 App</li>
+</ul>
+<blockquote>
+<p><strong>改期这一层已整个删除。</strong> 好处不只是少一件事：模考不再是 go/no-go 的闸门，而是<strong>纯诊断</strong>——只回答"哪个域弱、剩下几天补什么"。8/27 晚原本压着的"最终决策"消失，那个晚上完整还给学习。代价是 8/26 和 8/28 两个丢失的晚上没有任何补救途径，<strong>23:00 睡眠硬线因此从建议变成纪律</strong>。</p>
+</blockquote>
+<p><strong>已知约束</strong></p>
+<ul>
+<li>无お盆假，8/13–8/14 正常上班</li>
+<li>每周出社 1–2 天。<strong>已知出社日：8/26（三）、8/28（五）</strong>；⚠️ <strong>8/17–8/21 那周还会出社 1–2 天，具体哪天待定</strong> —— 定下来后要把那两天的题量下调到 80，缺口摊给周末 → <strong>通勤不是稳定资源</strong></li>
+<li>満員電車，单程 45 分钟，只能手机单手看</li>
+<li><strong>8/26（三）和 8/28（五）两个晚上确定学不了</strong>——都是出社日</li>
+<li><strong>8/21（五）晚上时间会偏少</strong></li>
+<li>⚠️ 丢的两天落在<strong>收尾期</strong>，不是中段。8/28 是原计划的考前总复习日 → 已把总复习<strong>移到 8/29 上午</strong>（下午才开考，上午有 4 小时）</li>
+</ul>
+<p><strong>核心思路</strong>：主力放在<strong>周末</strong>（8/15、16、22、23 四天完整可用），工作日晚上按较低配额排，通勤只做复习不做新题。</p>
+<p><strong>收尾期重排</strong>：因为 8/26 和 8/28 确定丢失，最后一周的可用日只剩 <strong>8/24（一）、8/25（二）、8/27（四）</strong> 三个晚上 + <strong>8/29 上午</strong>。所以：
+- 第二次模考<strong>取消</strong>（放不下，也不必要）
+- <strong>官方模考提前到 8/23（日）</strong>，错题前半挪到 8/24。模考是全程唯一一次干净读数，放在周末才有完整的按域拆解时间；且越早拿到，越有天数去补它暴露的洞
+- 考前总复习从 8/28 晚移到 <strong>8/29 上午</strong>
+- 8/26、8/28 两天<strong>只用通勤时间扫 26 条清单</strong>，不安排任何任务，掉了也无所谓</p>
+<hr />
+</div></details>
+<details class="sec" id="p1"><summary><span class="stitle">总体节奏</span><span class="chev"></span></summary><div class="sbody">
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>日期</th>
+<th>目标</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>一、建框架</strong></td>
+<td>8/12 – 8/14</td>
+<td>概念成网，<strong>不刷题</strong></td>
+</tr>
+<tr>
+<td><strong>二、背题全量</strong></td>
+<td>8/15 – 8/22</td>
+<td>1452 题走完一遍，标记错题</td>
+</tr>
+<tr>
+<td><strong>三、模考+错题</strong></td>
+<td>8/23 – 8/26</td>
+<td>8/23 官方模考诊断 → 攻标记题</td>
+</tr>
+<tr>
+<td><strong>四、收尾</strong></td>
+<td>8/27 – 8/28</td>
+<td>顽固错题 + 弱项补漏</td>
+</tr>
+<tr>
+<td><strong>五、考试日</strong></td>
+<td>8/29</td>
+<td>只看清单，不做新题</td>
+</tr>
+</tbody>
+</table>
+<hr />
+</div></details>
+<details class="sec" id="p2"><summary><span class="stitle">阶段一：建框架（8/12 – 8/14）✅ 已完成</span><span class="chev"></span></summary><div class="sbody">
+<blockquote class="key">
+<p><strong>✅ 已结束（8/12–8/14）。</strong>笔记通读 + 五个域精读全部完成，App 也已验证（错题本可用、可分别清空、不能按日期筛选）。8/15 已按计划开刷，<strong>无欠账带入阶段二</strong>。</p>
+<p>留下的唯一有用产物是下面这五问——<strong>后面每周复盘时再口头复述一次</strong>，答不出就回对应域补。</p>
+</blockquote>
+<ol>
+<li>三层架构各做什么，各自怎么计费？</li>
+<li>三种缓存分别在哪、活多久、命中条件？</li>
+<li>Scale up 和 scale out 分别解决什么问题？</li>
+<li>Time Travel → Fail-safe 的时间线，哪些表类型没有 Fail-safe？</li>
+<li>Direct share / private listing / public listing / Data Exchange 各自适用什么场景？</li>
+</ol>
+
+<hr />
+</div></details>
+<details class="sec" id="p2c"><summary><span class="stitle">Domain 6（C03 新增）：贯穿阶段二～四的独立线程</span><span class="chev"></span></summary><div class="sbody">
+<blockquote>
+<p><strong>这一节不属于任何单一阶段</strong>，所以从阶段一里抽出来单独立项。它的三个时段分别落在<strong>阶段二（8/16、8/22）和阶段四（8/27）</strong>——原来把它写在阶段一里纯属成文顺序，读计划时会误以为是建框架期的任务。</p>
+</blockquote>
+<p>笔记已补出「Domain 6：C03 新增内容」整章（Snowpark / Notebooks / Streamlit / Cortex / Snowflake ML / Dynamic Tables / Iceberg / Snowpipe Streaming / Trust Center / Data Classification / Git / Budgets）。</p>
+<p><strong>旧题库覆盖不到这部分</strong>——题库评论里那句"再自己补充了点 AI 的知识"就是证据。所以必须<strong>用独立时段</strong>，从阶段二的题量里挖，不加总时长：</p>
+<table>
+<thead>
+<tr><th>时段</th><th>所属阶段</th><th>任务</th><th>时长</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>8/16（日）后半</strong></td><td>阶段二</td><td>精读整章 + 官方 docs 对照（Cortex 函数列表、Dynamic Tables、Iceberg catalog 模式）</td><td>1.5 h</td></tr>
+<tr><td><strong>8/22（六）晚</strong></td><td>阶段二</td><td>第二遍，重点在「必须区分的三对」和 C03 那份 10 条清单</td><td>0.5 h</td></tr>
+<tr><td><strong>8/27（四）晚</strong></td><td>阶段四</td><td>第三遍，只看清单</td><td>0.5 h</td></tr>
+</tbody>
+</table>
+<p>对应地把阶段二的题量配额下调（已反映在阶段二配额表里），总投入不变。</p>
+<blockquote>
+<p><strong>唯一的检验点是 8/23 官方模考。</strong> 题库测不到 Domain 6，所以前两遍读完你没有任何反馈说明学没学会——这是全程唯一一处"只能靠自觉"的内容。8/23 拆解时<strong>专门看这部分的题</strong>，错得多就把 8/27 的第三遍从"只看清单"升级成重读整章。</p>
+<p><strong>注意拆解表里没有「Domain 6」这一行</strong>——官方只有五个域，新内容被拆散计入其中，必须逐题扫题干里的新名词单独计数。<strong>具体做法和判读阈值见阶段三</strong>。</p>
+</blockquote>
+</div></details>
+<details class="sec" id="p3"><summary><span class="stitle">阶段二：背题全量（8/15 – 8/22）</span><span class="chev"></span></summary><div class="sbody">
+<blockquote class="key">
+<p><strong>★ 模式：做题模式 + 立即看解析</strong>（不用背题模式——它不记录对错，错题本会是空的）。</p>
+<p><strong>答错的</strong> App 自动进错题本；<strong>蒙对的 / 对但说不出理由</strong> 必须<u>手动</u>收藏——这类题最危险。</p>
+</blockquote>
+<p><strong>分配原则</strong>：周末重、工作日轻。</p>
+<table>
+<thead>
+<tr>
+<th>日期</th>
+<th>类型</th>
+<th>配额</th>
+<th>题号区间</th>
+<th>累计</th>
+<th>预计时长</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>8/15（六）</td>
+<td>周末</td>
+<td>200</td>
+<td>1 – 200</td>
+<td>200</td>
+<td>4 h</td>
+</tr>
+<tr>
+<td>8/16（日）</td>
+<td>周末</td>
+<td>200</td>
+<td>201 – 400</td>
+<td>400</td>
+<td>4 h（+1.5 h C03）</td>
+</tr>
+<tr>
+<td>8/17（一）</td>
+<td>工作日</td>
+<td>130</td>
+<td>401 – 530</td>
+<td>530</td>
+<td><strong>2.4 h</strong></td>
+</tr>
+<tr>
+<td>8/18（二）</td>
+<td>工作日</td>
+<td>130</td>
+<td>531 – 660</td>
+<td>660</td>
+<td><strong>2.4 h</strong></td>
+</tr>
+<tr>
+<td>8/19（三）</td>
+<td>工作日</td>
+<td>130</td>
+<td>661 – 790</td>
+<td>790</td>
+<td><strong>2.4 h</strong></td>
+</tr>
+<tr>
+<td>8/20（四）</td>
+<td>工作日</td>
+<td>130</td>
+<td>791 – 920</td>
+<td>920</td>
+<td><strong>2.4 h</strong></td>
+</tr>
+<tr>
+<td>8/21（五）时间少</td>
+<td>工作日</td>
+<td><strong>80</strong></td>
+<td>921 – 1000</td>
+<td>1000</td>
+<td><strong>1.5 h</strong></td>
+</tr>
+<tr>
+<td>8/22（六）</td>
+<td>周末</td>
+<td>250</td>
+<td>1001 – 1250</td>
+<td>1250</td>
+<td>5 h（+0.5 h C03 ②）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>关于走不完 1452 题</strong>：这是<strong>设计</strong>，不是失败。dump 题库重复率通常 20–30%，剩下的 200 题里大概率没有新知识点。<strong>排在后面的题不等于更难的题</strong>——如果题库顺序不是随机的（按域排列），就在 8/15 先跳看一遍分布，把明显没覆盖到的域的题优先提前。</p>
+<p><strong>每题预算按 65 秒算</strong>（含读题干、读解析、补笔记），不是 50 秒。上表的工作日时长已按此重算——原来写的 2 h / 1.2 h 比真实需要少了约 20%，四个晚上累计会悄悄欠下 1.5 小时。<strong>感觉推不动就减量，不要压缩解析阅读。</strong></p>
+<blockquote class="key">
+<p><strong>★ 8/16 实测修正：真实速度是 74 秒/题</strong>（8/15：154 题 / 3h10m，含读解析与补笔记），比 65 秒的假设慢 14%。</p>
+<p><strong>上表以「题量」为准，时长一律 ×1.14</strong>：工作日 130 题 = <strong>2.7 h</strong>（不是 2.4），周末 250 题 = <strong>5.1 h</strong>。8/15 的 46 题缺口来自午后昏睡，<strong>不是速度问题——配额本身不用改</strong>。</p>
+<p><strong>另加：每天开场先清前一天错题（30–40 分钟）</strong>，这段时间不计入题量配额，从当天总时长里出。</p>
+</blockquote>
+<blockquote class="key">
+<p><strong>★ 8/16 决定：工作日改为「早上为主」</strong>——上班前学，不再把配额压在晚上。</p>
+<p><strong>题量不变</strong>，只是搬时段。早晨的优势是注意力最好且<u>不会被加班吃掉</u>；代价是必须早睡，所以 <strong>23:00 睡眠硬线从纪律升级成前提</strong>——牺牲睡眠换早起，等于把两天一起打折。</p>
+<p><strong>拆法</strong>：早上做<u>新题</u>（需要专注），晚上留 30–40 分钟做<u>错题复习</u>（低耗，累了也做得动）。晚上没时间就直接跳过，第二天早上一起清。</p>
+</blockquote>
+<blockquote>
+<p><strong>别把这个 65 秒和考试的 69 秒（115 分钟 / 100 题）混为一谈——数字撞巧，做的事完全不同。</strong></p>
+<table>
+<thead><tr><th></th><th>每题</th><th>这一分钟里在做什么</th></tr></thead>
+<tbody>
+<tr><td><strong>学习（阶段二）</strong></td><td>65 s</td><td>读题干 → 作答 → <strong>读解析</strong> → 必要时补笔记</td></tr>
+<tr><td><strong>考试</strong></td><td>69 s</td><td>读题干 → 想 → 选。<strong>没有解析可读</strong></td></tr>
+</tbody>
+</table>
+<p>学习那 65 秒有一半以上花在<strong>读解析</strong>上，而那才是学习真正发生的地方。所以 65 秒不是"和考场一样快"，是<strong>比考场紧得多</strong>：同样一分钟出头，考场上只做一件事，学习时要做三件。<br>
+<strong>推论</strong>：8/15 校准出来如果是 80、90 秒，那是<strong>正常的</strong>，按真值下调题量即可。<strong>唯一不许砍的是解析</strong>——砍掉解析，65 秒能做完，但那一小时等于没学。</p>
+</blockquote>
+<p><strong>掉晚上怎么办</strong>（这是为你那两个晚上准备的规则）：</p>
+<blockquote>
+<p>某个工作日晚上没学 → <strong>不要试图第二天补两倍</strong>，那会连累第二天。但也<strong>不要整块往周末挪</strong>——按 65 秒/题算，周末日的现实上限是 <strong>300 题（≈5.5 h）</strong>，而 8/22 本身已排 250 题 + 0.5 h C03。</p>
+<p>所以规则是<strong>「周末吸收一部分，其余从尾部砍掉」</strong>：</p>
+<table>
+<thead>
+<tr><th>情况</th><th>怎么办</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>掉 1 个工作日晚上</strong>（130 题）</td><td>8/22 从 250 提到 <strong>300</strong>（吸收 50），<strong>剩下 80 题直接砍掉</strong>，不再找补</td></tr>
+<tr><td><strong>掉 2 个工作日晚上</strong>（260 题）</td><td>同样 8/22 提到 <strong>300</strong>，<strong>其余 210 题砍掉</strong>。<strong>8/23 模考照常</strong>，不动</td></tr>
+<tr><td><strong>掉一整个周末日</strong>（200–250 题）</td><td>这才是真的伤。<strong>8/23 上午照做模考</strong>（它是唯一一次干净读数，最不能牺牲），<strong>下午原定的"重读最弱域"改为补题</strong>，阶段三压到 <strong>8/24–8/25</strong></td></tr>
+</tbody>
+</table>
+<p><strong>为什么敢砍：</strong>砍掉的是排在最后的题，而<strong>排在后面的题不等于更难的题</strong>（见上一条）。走不完 1452 本来就是设计。<strong>用砍题量保住模考和阶段三，永远比保住"做完"划算。</strong></p>
+<blockquote>
+<p><strong>⚠️ 阶段三没有你以为的那么多余量。</strong>它名义上是 8/23–8/26 四天，但 <strong>8/26 出社、学不了</strong>——真正能用的只有 <strong>8/23、8/24、8/25 三天</strong>。所以"压缩到 8/25–8/26"这种兜底是<strong>不存在的</strong>，8/26 压不进任何东西。缓冲只能从<strong>题量</strong>里出，不能从<strong>天数</strong>里出。</p>
+</blockquote>
+</blockquote>
+<p><strong>出社日的用法</strong>（每周 1–2 天）：</p>
+<p>満員電車单手看手机，读长题干+解析效率很低，所以<strong>通勤时间不算进上面的配额——它是净增量，出社日的日目标不要因此上调</strong>。通勤只做这三件事：</p>
+<ol>
+<li><strong>App 的「我的错题」</strong>（首选）：不设量、不看时间，到站就停。碎片友好、100% 命中短板，且<strong>不动「顺序练习」的进度指针</strong></li>
+<li>错题清空了再用<strong>「随机练习」</strong>——混域无上下文，正好练冷启动读题</li>
+<li>重看《速查笔记》的<strong>考前模式</strong>（26 条核心口诀 + 两张核心表 + 两份易错清单，最适合手机竖屏）</li>
+</ol>
+<blockquote class="key">
+<p><strong>★ 通勤三条禁令</strong>：① <strong>不做「顺序练习」</strong>——它是主线，进度指针是你的唯一进度依据，零散推进会污染它；② <strong>不做「模拟考试」</strong>——仿真模考是稀缺诊断资源，要留给 8/23 当基线，且需 65 分钟不被打断；③ 车上看不懂的题<strong>当场不折腾</strong>，记题号回家一起处理——站着想复杂概念转化率极低，还会让你误以为"复习过了"。</p>
+</blockquote>
+<p><strong>提前把笔记和题库做离线缓存</strong>，地铁区间断网时不至于卡住。</p>
+<h3>三种场景用哪个模式</h3>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>模式</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>顺序过题（1–1250）</strong></td>
+<td><strong>做题模式</strong></td>
+<td>唯一能产生错题本的方式。曝光 + 记录一步完成</td>
+</tr>
+<tr>
+<td><strong>建框架期读笔记时</strong></td>
+<td><strong>背题模式，按关键词搜</strong></td>
+<td>当<strong>词典</strong>用，不顺序刷。读到抽象处（如 clustering）就搜关键词看 3–5 道题怎么问，再回笔记。消耗的是零散题，不影响 8/15 起的连续区块</td>
+</tr>
+<tr>
+<td><strong>通勤复习</strong></td>
+<td><strong>「我的错题」，做题模式</strong></td>
+<td>已见过一遍，认出陷阱即可，站着单手也做得动。<strong>连对 3 次才出错题本</strong>，正好卡住"记住了答案位置"这种假会。<u>原写「背题模式」已改</u>——那样不产生任何记录</td>
+</tr>
+</tbody>
+</table>
+<p><strong>关于「背题模式更快」</strong>：真实差距很小。背题模式下"不确定"的题<strong>仍然要手动点收藏</strong>（否则错题本是空的），而你现在 46–47%，这类题占比接近一半。净差约每题 0.5–1 秒，1250 题合计 10–20 分钟——远小于它丢掉的「按区块真实正确率」这条曲线。</p>
+<p><strong>关于题库方推荐的「背题 → 顺序做题 → 模考」三步</strong>：顺序是对的，本计划就是它的压缩版（做题模式过一遍 = 曝光+建错题本合并；阶段三 = 第二遍；<strong>8/23</strong> 官方模考 = 第三步）。但两遍全量约 35 小时，装不进你 17 天 40 小时的预算——省掉的正是第二遍里那些你第一次就笃定答对的题，信息量接近零。<strong>采纳它的顺序，拒绝它的覆盖量。</strong></p>
+<p><strong>每天开场 10 分钟：回访三天前的标记题</strong></p>
+<p>8/15 那批题标记率最高（那时框架最不牢），却离考试最远。阶段三只做「标记题」不解决这个——它们到 8/23 已经放了 8 天。</p>
+<p>规则：每天正式开始前，<strong>扫一遍两天前那个区块的标记题</strong>（只看，不做，10 分钟）。通勤日就在电车上做。累计不到 2 小时，比多刷 150 题划算。</p>
+<p><strong>对照表（不要凭感觉抓最近的）</strong>：</p>
+<table>
+<thead>
+<tr><th>当天</th><th>回访哪一块</th><th>当天</th><th>回访哪一块</th></tr>
+</thead>
+<tbody>
+<tr><td>8/17</td><td>8/15 块（题 1–200）</td><td>8/20</td><td>8/18 块（531–660）</td></tr>
+<tr><td>8/18</td><td>8/16 块（201–400）</td><td>8/21</td><td>8/19 块（661–790）</td></tr>
+<tr><td>8/19</td><td>8/17 块（401–530）</td><td>8/22</td><td>8/20 块（791–920）</td></tr>
+</tbody>
+</table>
+<p><strong>8/21 和 8/22 两块（921–1250，共 330 题）不做回访</strong>——它们离阶段三只有一两天，由 8/24–8/25 的错题攻坚直接覆盖，再插一遍是浪费。</p>
+<p><strong>执行细则</strong>：</p>
+<ul>
+<li>每题先自己心里选一个（3 秒），再看答案。<strong>心里选过</strong>和<strong>直接看</strong>，记忆效果差很远</li>
+<li>猜错的、或猜对但说不出理由的 → <strong>标记</strong></li>
+<li>完全确定的 → 3 秒跳过，不读解析</li>
+<li>解析里出现笔记上没有的知识点 → <strong>当场补写进笔记</strong>，这一步不能省</li>
+<li>每天结束用 5 分钟回顾当天补写的内容</li>
+</ul>
+<p><strong>中途检查点（8/18 晚）</strong>：判据是<strong>趋势，不是绝对值</strong>。从 47% 起步，前几块标记率高于 60% 几乎是必然（光答错就约一半），拿它当触发器会误报、白扔半天。正确的信号是：</p>
+<ul>
+<li><strong>第 2 块（201–400）的正确率没比第 1 块高出 10 个点以上</strong> → 框架没建牢，停下来重读笔记半天</li>
+<li>进度落后超过 1 天 → 按下面的"掉晚上"规则往周末挪，不要加码</li>
+</ul>
+<hr />
+</div></details>
+<details class="sec" id="p4"><summary><span class="stitle">阶段三：模考 + 错题攻坚（8/23 – 8/26）</span><span class="chev"></span></summary><div class="sbody">
+<p><strong>模式</strong>：切回<strong>做题模式</strong>，只做阶段二标记的题。</p>
+<blockquote>
+<p><strong>「500–600 题」这个估计大概率偏低。</strong> 47% 起步、1250 题，光答错就约 650 题，再加上"蒙对但说不出理由"（你自己估计接近一半）——真实标记池可能是 <strong>700–900</strong>。正确率会逐块爬升，所以没那么糟，但<strong>不要把 600 当定数</strong>：8/18 检查点那天直接读 App 里的实际计数，按真实数字重排 8/24 / 8/25 的分配。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>日期</th>
+<th>类型</th>
+<th>任务</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>8/23（日）</strong></td>
+<td>周末</td>
+<td><strong>官方 Practice Exam</strong>，完整计时 + <strong>按域拆解正确率</strong>。放周末才有时间做拆解——拆解才是产出，分数只是副产品。下午：按拆解结果重读最弱的 1–2 个域</td>
+</tr>
+<tr>
+<td>8/24（一）</td>
+<td>工作日</td>
+<td>错题本 + 收藏题的前半。再做错的<strong>二次标记</strong></td>
+</tr>
+<tr>
+<td>8/25（二）</td>
+<td>工作日</td>
+<td>错题本后半 + 8/23 暴露的弱项域继续补</td>
+</tr>
+<tr>
+<td><strong>8/26（三）</strong></td>
+<td><strong>出社 · 学不了</strong></td>
+<td>通勤扫 26 条清单。<strong>不安排任务</strong></td>
+</tr>
+</tbody>
+</table>
+<h3>8/23 官方模考：纯诊断，不是闸门</h3>
+<p><strong>不改期已经定死</strong>，所以模考不再回答"考不考"，只回答<strong>"剩下 5 天补什么"</strong>。分数本身没有行动含义，<strong>按域拆解才有</strong>。</p>
+<p>为什么必须用官方模考而不是题库自测：题库你已经背过一遍，自测正确率被污染，可能虚高 15–25 个点。官方 Practice Exam 你没见过，是全程<strong>唯一一次干净读数</strong>，也是 <strong>Domain 6（C03 新增）唯一一次被真正检验</strong>的机会——旧题库根本不覆盖它。</p>
+<blockquote>
+<p><strong>⚠️ 拆解表里没有「Domain 6」这一行——别找。</strong> C03 官方只有<strong>五个域</strong>（31 / 21 / 20 / 18 / 10，加起来正好 100%），我们说的 "Domain 6" 是<strong>自造的归类</strong>，考纲把这些新内容<strong>拆散塞进了那五个域</strong>：Cortex、Snowpark → 计入 <strong>Domain 1</strong>；Dynamic Tables、Iceberg、Snowpipe Streaming → <strong>Domain 3 / 4</strong>；Trust Center、Data Classification → <strong>Domain 2</strong>。</p>
+<p>所以新内容的失分会<strong>分散计入五个域</strong>，按域正确率表看不出它单独考得怎么样。8/23 拆解要多做一步：</p>
+<ol>
+<li><strong>先按域读表</strong>（决定重读哪 1–2 个域）——这是主线，别被下面这步打断</li>
+<li><strong>再逐题扫一遍题干</strong>，凡出现 Snowpark / Cortex / Dynamic Table / Iceberg / Snowpipe Streaming / Trust Center / Classification / Streamlit / Notebooks 等新名词的，<strong>单独数出对错</strong>，在错题本上统一打一个标记（如 <code>C03</code>）</li>
+</ol>
+<p><strong>怎么读这个数</strong>：新内容约占 10–15%，65 题里大约 <strong>7–10 题</strong>。</p>
+<ul>
+<li><strong>错 ≤ 2 题</strong> → 两遍读到位了，8/27 第三遍维持"只看清单"</li>
+<li><strong>错 ≥ 4 题</strong> → 把 8/27 第三遍升级成<strong>重读整章</strong>（0.5 h → 1 h，从当晚"最弱域最后一遍"里挪）</li>
+</ul>
+<p><strong>但优先级要摆正</strong>：这块满打满算 7–10 题，而 D1+D4+D2 是 <strong>72% 的分值</strong>。如果 8/23 之后时间不够分，<strong>收窄顺序里 Domain 6 排在 D1 / D4 / D2 之后</strong>——不要因为它"新、没底"就优先补，那是焦虑在排序，不是分值在排序。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>拆解结果</th>
+<th>8/24–8/27 怎么用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>≥ 75%</strong></td>
+<td>状态良好。按原计划走错题本，不额外加码</td>
+</tr>
+<tr>
+<td><strong>60 – 75%</strong></td>
+<td>最可能的区间。<strong>把最弱的 1–2 个域从错题时间里切出来专门补</strong>，其余照旧</td>
+</tr>
+<tr>
+<td><strong>&lt; 60%</strong></td>
+<td>不改期，所以只有一个动作：<strong>放弃"过完所有错题"，只攻占比最高的 Domain 1（31%）+ 4（21%）+ 2（20%）</strong>。72% 的分值集中在这三域，剩下 5 天铺不开就别铺</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>低分的正确反应是收窄，不是加速。</strong> 剩 5 天时"什么都补一点"等于什么都没补。三个域吃透 = 72% 的题面，足以过线。</p>
+</blockquote>
+<hr />
+</div></details>
+<details class="sec" id="p5"><summary><span class="stitle">阶段四：收尾（8/27 – 8/28）</span><span class="chev"></span></summary><div class="sbody">
+<table>
+<thead>
+<tr>
+<th>日期</th>
+<th>任务</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>8/27（四）在家</strong></td>
+<td><strong>本期最后一个完整学习晚上，3 h</strong>：<br>① 顽固错题（二次标记题）最后一遍，每题口头说出"为什么错"（1.5 h）<br>② C03 新增清单第三遍（0.5 h）<br>③ 8/23 模考暴露的最弱域，最后一遍（1 h）<br><br><em>（原压在今晚的"改期最终决策"已随不改期决定删除；《速查笔记》通读移到 8/29 上午，那里已排了）</em></td>
+</tr>
+<tr>
+<td><strong>8/28（五）出社 · 学不了</strong></td>
+<td>通勤扫 26 条清单，晚上什么都不做。<strong>这天的正确用法是睡觉</strong>——考前一晚的睡眠对第二天阅读速度的影响，比多刷 50 题大得多</td>
+</tr>
+</tbody>
+</table>
+<p><strong>关于取消第二次模考</strong>：8/26、8/28 丢失后，最后一周只剩三个晚上，塞不下第二次完整模考（2 h + 分析）。而且 8/23 的官方模考已经给了干净读数，第二次的边际信息量远小于「把顽固错题真正搞懂」。<strong>取消是主动取舍，不是被压缩。</strong></p>
+<p><strong>睡眠硬规则（8/25–8/28）</strong>：<strong>23:00 前停止学习</strong>。你的 dawn phenomenon 对睡眠剥夺敏感（48–72 小时窗口），考前三天连续晚睡会直接吃掉考场上的阅读速度和 <strong>115 分钟</strong>决策的稳定性——而且你的考试在 <strong>15:45</strong>，是一天里状态最容易塌的时段。这条不是养生建议，是分数变量。</p>
+<hr />
+</div></details>
+<details class="sec" id="p6"><summary><span class="stitle">阶段五：考试日（8/29 周六 15:45，线下）</span><span class="chev"></span></summary><div class="sbody">
+<p>下午开考，时间很宽裕。</p>
+<table>
+<thead>
+<tr>
+<th>时间</th>
+<th>安排</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>上午（原 8/28 的总复习移到这里）</td>
+<td>睡饱，自然醒。<strong>90 分钟</strong>：<br>① 两份高频易错清单 26 条（25 min）<br>② 《速查笔记》全部<strong>表格</strong>快扫（40 min）<br>③ 五问自测口头复述一遍（15 min）<br><strong>不做任何新题</strong>，10:30 前结束，之后彻底放下</td>
+</tr>
+<tr>
+<td>12:30</td>
+<td>正常吃饭，别吃太饱</td>
+</tr>
+<tr>
+<td>14:45</td>
+<td>到考场（テストセンター一般要求提前 15–30 分钟到，办理手续要时间）</td>
+</tr>
+<tr>
+<td>15:45</td>
+<td>开考</td>
+</tr>
+</tbody>
+</table>
+<p><strong>证件（今天就确认）</strong>：Pearson VUE テストセンター 通常要求<strong>两份带签名的身份证件，其中一份带照片</strong>。在日本最稳的组合是<strong>护照 + 在留カード</strong>。姓名拼写必须和预约时填的完全一致，对不上会被拒绝入场。</p>
+<p><strong>考场注意</strong>：随身物品要存柜，手机不能带入。提前查好考场位置和路线，周六电车班次可能和平日不同。</p>
+<p><strong>答题策略</strong>：</p>
+<ul>
+<li>115 分钟 / 100 题 = 69 秒一题，<strong>时间够，不要慌</strong>。SnowPro Core 大量题是"认得就 15 秒、不认得想 3 分钟也没用"，<strong>真正的风险不是不够快，是在 5–6 道纠结题上耗光余量</strong></li>
+<li>第一遍：会的直接答；犹豫超过 90 秒的<strong>标记跳过</strong>，先把会的分拿满。目标是 <strong>90 分钟内跑完 100 题</strong>，留 25 分钟给第二遍</li>
+<li><strong>中途对表两次</strong>（唯一要记的两个数）：<strong>过 30 分钟应在第 35 题左右，过 60 分钟应在第 70 题左右</strong>。明显落后就加快放弃速度——标记跳过不丢分，卡住才丢分</li>
+<li>第二遍：回头处理标记题</li>
+<li>划重点的关键词：<strong>MOST / BEST / LEAST / recommended / without additional cost / minimal effort / automatically</strong></li>
+<li>Select all that apply 看清要选几个</li>
+<li><strong>不留空题</strong>，没有倒扣</li>
+</ul>
+<hr />
+</div></details>
+<details class="sec" id="p7"><summary><span class="stitle">每日打卡</span><span class="chev"></span></summary><div class="sbody">
+<pre><code>8/12 三 在家  ✅ 决定不改期  ✅ 证件  ✅ 题库有 App
+              ✕ 太晚，未学习。睡前十来题（1421–1452）
+8/13 四 在家  ✅ 通读笔记全文 0.7h  ✅ Domain 1&amp;4 精读 1.2h   完成，无欠账
+8/14 五 在家  ✅ D2&amp;3 精读 + D5   ✅ 五问自测 → 通过        完成，无欠账
+8/15 六 周末  ✅ 清空答题记录  ✅ 题 1–200 → 实际154题/60%正确   欠46题（154/200=77%）
+8/16 日 周末  ✅ 题 201–400（含跨零点续做）→ 实际176题/55%正确  ✕ C03 精读①未做   累计330题=189✓/141✗（57%）；两天配额未达标
+8/17 一       [ ] 回访 8/15 块  [ ] 题 401–530（130题，<strong>不追欠</strong>，优先补 D3）   10m+2.4h
+8/18 二       [ ] 回访 8/16 块  [ ] 题 531–660  [ ] 中途检查点（看趋势）
+8/19 三       [ ] 回访 8/17 块  [ ] 题 661–790          2.4h
+8/20 四       [ ] 回访 8/18 块  [ ] 题 791–920          2.4h
+8/21 五 时间少 [ ] 回访 8/19 块  [ ] 题 921–1000         1.5h
+8/22 六 周末  [ ] 回访 8/20 块  [ ] 题 1001–1250 ✅  [ ] C03 ②   5h+0.5h
+8/23 日 周末  [ ] ★ 官方模考（计时）→ ① 按域拆解 ② 扫 C03 新名词题单独计数   2h
+              [ ] 下午：最弱 1–2 域重读                 2h
+8/24 一       [ ] 错题前半 + 二次标记                   2.5h
+8/25 二       [ ] 错题后半 + 弱项域继续  [ ] 23:00 停   2.5h
+              [ ] 查 8/29（六）电车班次 + 考场路线
+8/26 三 出社  ✕ 学不了。[ ] 通勤扫 26 条。早睡
+8/27 四 在家  [ ] 顽固错题&quot;为什么错&quot;  [ ] C03 ③
+              [ ] 最弱域最后一遍  [ ] 26 条清单打印上纸  3h
+8/28 五 出社  ✕ 学不了。[ ] 通勤扫 26 条。[ ] 早睡（这是任务）
+8/29 六       [ ] 上午 90min 总复习  [ ] 13:30 纸上扫 26 条
+              [ ] 14:45 到场  [ ] 15:45 开考
+</code></pre>
+<p><strong>总投入约 40 小时</strong>（与原版持平：题量减了约 200 题，换成 C03 新内容 2.5 h + 每日回访 1.5 h + 多一次模考）。周末四天占 15.5 小时。</p>
+<hr />
+</div></details>
+<details class="sec" id="p8"><summary><span class="stitle">七条硬规则</span><span class="chev"></span></summary><div class="sbody">
+<ol>
+<li><strong>阶段一不刷题。</strong> 没有框架的刷题会浪费题目的"第一次冲击"价值。</li>
+<li><strong>背题时补笔记。</strong> 不补笔记的背题只是在滑动屏幕，两天后什么都不剩。</li>
+<li><strong>掉了的晚上往周末挪，不往第二天挪。</strong> 连续超载会直接崩掉整个计划。8/26 和 8/28 已经排进计划里当"空日"，不要事后再想补。</li>
+<li><strong>不改期。</strong> 8/29 是唯一一次，改期这层已从计划中整个删除。8/23 模考只做诊断，分数低的反应是<strong>收窄到 D1+D4+D2（72% 分值）</strong>，不是加速也不是逃跑。</li>
+<li><strong>C03 新增内容必须独立立项。</strong> 题库不覆盖它，刷再多题也补不上这块。三遍：<strong>8/16 精读、8/22 复习、8/27 清单</strong>（原文写的 8/21 / 8/26 是错的——8/21 是时间最少的一晚，8/26 出社学不了）。</li>
+<li><strong>用做题模式，不用背题模式。</strong> 背题模式不产生错题本，阶段三会没有输入。</li>
+<li><strong>8/25–8/28 睡眠 23:00 硬线。</strong> 这是分数变量，不是养生建议。</li>
+</ol>
+<hr />
+</div></details>
+<details class="sec" id="p9"><summary><span class="stitle">行政事项（剩余 2 项）</span><span class="chev"></span></summary><div class="sbody">
+<p><strong>App 验证与改期条款已全部结清，不再列出。</strong>只剩两项：</p>
+<ul>
+<li>[ ] <strong>确认证件</strong>：护照 + 在留カード 在手边、姓名拼写与预约一致</li>
+<li>[ ] <strong>离线缓存</strong>《速查笔记》和题库到手机 —— 出社日通勤要用，<u>下次出社前必须做完</u></li>
+</ul></div></details>
+<details class="sec" id="p10"><summary><span class="stitle">每日复盘：这份计划要天天改</span><span class="chev"></span></summary><div class="sbody">
+<blockquote>
+<p>这份计划是<strong>基于 47% 和一堆估算量搭起来的假设</strong>：每题 65 秒、标记率、错题池 700–900、正确率逐块爬升。<strong>每一条都可能是错的</strong>，而从 8/15 起你每晚都会拿到真数据。不用真数据修计划，就是拿 8/12 夜里的猜测指挥 8/25 的自己。</p>
+</blockquote>
+<h3>每晚 3 分钟，只记四个数</h3>
+<p>不要写日记，四个数就够——它们是唯一能改计划的输入：</p>
+<table>
+<thead>
+<tr><th>记什么</th><th>为什么这个数能改计划</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>① 实际做了多少题</strong></td><td>对比配额 → 决定要不要往周末挪</td></tr>
+<tr><td><strong>② 实际花了多久</strong></td><td>÷ 题数 = 真实每题秒数。65 秒是估的，<strong>8/15 当晚就能校准</strong>，之后所有配额按真值重排</td></tr>
+<tr><td><strong>③ 本块正确率</strong></td><td>逐块曲线。唯一诚实的进度指标，比"做了几题"有用得多</td></tr>
+<tr><td><strong>④ 累计标记数</strong></td><td>阶段三的真实工作量。到 8/18 就能算出 8/24–8/25 装不装得下</td></tr>
+</tbody>
+</table>
+<h3>实绩表（每晚填一行）</h3>
+<pre><code>阶段一（无题量，只记完成情况）
+8/13  ✅ 通读全文 + Domain 1&amp;4 精读     按计划完成，无欠账
+8/14  ✅ 五问自测 → 通过                按计划完成，无欠账
+
+阶段二
+日期   计划/实际题数     用时          本块正确率   累计（正确/错误/正确率）
+8/15   200 / 154         3h10m         60%          154 = 92/62（60%）
+8/16   200 / 176         4h+夜间       55%          330 = 189/141（57%）
+8/17   130 /             h            %
+8/18   130 /             h            %     ← 检查点
+8/19   130 /             h            %
+8/20   130 /             h            %
+8/21    80 /             h            %
+8/22   250 /             h            %
+</code></pre>
+<p>⚠️ <strong>8/15+8/16 两天累计欠 114 题（400 计划 vs 286 实际），8/17 起不追欠</strong>——按 8/16 EOD 结论，追欠会把错法问题埋进疲劳里；正确率（58% vs 47% 基线）比题量缺口更能反映真实进度。</p>
+<h3>三个改计划的触发条件（其余情况不要动计划）</h3>
+<ol>
+<li><strong>真实每题秒数 &gt; 75 秒</strong>（8/15 当晚可知）→ 不是让你加快，是<strong>把后面所有配额按真值下调</strong>。解析读不透的题等于没做</li>
+<li><strong>某块正确率低于上一块</strong> → 通常不是退步，是撞上了没读过的域。<strong>停下来查是哪个域，回去读那一节</strong>，比继续推有用</li>
+<li><strong>8/18 累计标记 &gt; 500</strong> → 阶段三注定装不下全部。<strong>当天就决定只做二次标记题 + D1/D4/D2 的标记题</strong>，别等 8/24 被数字吓到</li>
+</ol>
+<blockquote>
+<p><strong>改计划 ≠ 降标准。</strong> 允许改的是<strong>配额和顺序</strong>；不允许改的是七条硬规则、23:00 睡眠线、以及"解析必须读透"。数字往下调是正常的工程行为，<strong>规则松动才是崩盘的开始</strong>。</p>
+</blockquote>
+<h3>每晚一句问话</h3>
+<p>填完四个数，问自己：<strong>"如果明天完全按计划走，8/29 之前最可能没搞定的是什么？"</strong> 能立刻说出答案，就把它排进明天；说不出来，就什么都不改，照原计划走。</p>
+</div></details><div class="nores hide">没有匹配的章节</div></section>
+</main>
+
+<footer>考试 2026/08/29 15:45 · 离线可用</footer>
+<button class="top" aria-label="回到顶部">↑</button>
+<script>
+(function(){
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+// tabs
+$$('.tab').forEach(b=>b.onclick=()=>{
+  $$('.tab').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  $$('.pane').forEach(p=>p.classList.toggle('on',p.id===b.dataset.p));
+  $$('.tocgrp').forEach(g=>g.classList.toggle('hide',g.dataset.tab!==b.dataset.p));
+  window.scrollTo(0,0); run();
+});
+// toc
+$('.tocbtn').onclick=()=>$('#toc').classList.add('open');
+$('#toc').onclick=e=>{if(e.target.id==='toc')$('#toc').classList.remove('open')};
+$$('.tocitem').forEach(a=>a.onclick=()=>{
+  const pane=$('#'+a.dataset.tab), secs=pane.querySelectorAll('details.sec:not(.meta)');
+  const t=secs[+a.dataset.i]; if(!t)return;
+  $('#toc').classList.remove('open'); t.open=true;
+  setTimeout(()=>t.scrollIntoView({block:'start',behavior:'smooth'}),60);
+});
+// wrap tables
+$$('table').forEach(t=>{const d=document.createElement('div');d.className='tw';
+  t.parentNode.insertBefore(d,t);d.appendChild(t)});
+// 速读模式
+(function(){
+  const btn=$('.terse'), KEY='spc-terse';
+  const hint=document.createElement('div');
+  hint.className='tersehint';
+  hint.textContent='速读模式：只显示标题 · 表格 · 口诀 · 易错清单。解释和例子已折叠，点上方「速读」看全文。';
+  const np=$('#notes'); np.insertBefore(hint,np.firstChild.nextSibling);
+  // 核心表：把 .core 从 table 提到外层 .tw 包装上
+  $$('table.core').forEach(t=>{if(t.parentNode.classList.contains('tw'))t.parentNode.classList.add('core')});
+  // 没有任何核心内容的章节，在考前模式整节隐藏
+  $$('details.sec').forEach(s=>{
+    if(!s.classList.contains('keepall') && !s.querySelector('blockquote.key.core,table.core'))
+      s.classList.add('nocore');
+  });
+  // 冲刺模式：没有 ★ 核心口诀块的章节整节隐藏
+  $$('details.sec').forEach(s=>{
+    if(!s.querySelector('blockquote.key.core')) s.classList.add('nostar');
+  });
+  const MODES=['全文','速读','考前','冲刺'];
+  const set=m=>{
+    document.body.classList.toggle('terse',m===1);
+    document.body.classList.toggle('exam',m===2);
+    document.body.classList.toggle('blitz',m===3);
+    btn.setAttribute('aria-pressed',m?'true':'false');
+    btn.textContent=MODES[m];
+    hint.textContent = m===1
+      ? '速读模式：只显示标题 · 表格 · 口诀 · 易错清单。再点切到「考前」。'
+      : m===2
+      ? '考前模式：★ 核心口诀 + 核心表 + 高频易错清单。约 50 分钟。再点切到「冲刺」。'
+      : '冲刺模式：每条只留 ★ 那一行，去掉推导和例子。约 15 分钟，用于考前最后一遍 / 每日做题前扫读。点按钮回「全文」。';
+    hint.style.display = m ? 'block' : 'none';
+    try{localStorage.setItem(KEY,String(m))}catch(e){}
+  };
+  btn.onclick=()=>{
+    const b=document.body.classList;
+    const cur=b.contains('blitz')?3:b.contains('exam')?2:b.contains('terse')?1:0;
+    set((cur+1)%4);
+  };
+  let saved='0'; try{saved=localStorage.getItem(KEY)||'0'}catch(e){}
+  set(Math.min(3,parseInt(saved,10)||0));
+})();
+// checkbox lines
+$$('p,li').forEach(el=>{if(/^\[\s?\]/.test(el.textContent))el.classList.add('chk')});
+// search
+let timer;
+$('#q').oninput=()=>{clearTimeout(timer);timer=setTimeout(run,180)};
+function clean(n){$$('mark').forEach(m=>m.replaceWith(...m.childNodes));n.normalize&&n.normalize()}
+function run(){
+  const q=$('#q').value.trim().toLowerCase();
+  const pane=$('.pane.on'); clean(document.body);
+  const secs=[...pane.querySelectorAll('details.sec')];
+  if(!q){secs.forEach(s=>{s.classList.remove('hide');s.open=false});
+    $('.count').textContent=secs.length+' 节';$('.nores')&&$('.nores').classList.add('hide');return}
+  let hit=0;
+  secs.forEach(s=>{
+    const m=s.textContent.toLowerCase().includes(q);
+    s.classList.toggle('hide',!m); s.open=m; if(m){hit++;mark(s,q)}
+  });
+  $('.count').textContent=hit+' 节命中';
+  const nr=pane.querySelector('.nores'); if(nr)nr.classList.toggle('hide',hit>0);
+}
+function mark(root,q){
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  const hits=[];let n;
+  while(n=w.nextNode()){if(n.nodeValue.toLowerCase().includes(q)&&n.parentNode.tagName!=='SCRIPT')hits.push(n)}
+  hits.forEach(n=>{
+    const i=n.nodeValue.toLowerCase().indexOf(q);
+    const a=n.splitText(i);a.splitText(q.length);
+    const m=document.createElement('mark');m.textContent=a.nodeValue;a.replaceWith(m);
+  });
+}
+// back to top
+const btnTop=$('.top');
+addEventListener('scroll',()=>btnTop.classList.toggle('show',scrollY>600),{passive:true});
+btnTop.onclick=()=>scrollTo({top:0,behavior:'smooth'});
+run();
+})();
+</script></body></html>
