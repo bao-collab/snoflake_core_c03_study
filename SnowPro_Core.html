@@ -339,11 +339,13 @@ footer{text-align:center;color:var(--mute);font-size:11.5px;padding:26px 16px 10
 <tr><td><strong>Snowflake CLI</strong>（<code>snow</code>）</td><td>新一代命令行，面向<strong>应用开发与部署</strong>（Streamlit、Snowpark、Native App、Git）</td><td>与老的 <strong>SnowSQL</strong> 区分：SnowSQL 是<strong>交互式跑 SQL</strong> 的客户端（能 PUT/GET），Snowflake CLI 偏 <strong>DevOps / CI-CD</strong></td></tr>
 <tr><td><strong>IDE 集成</strong></td><td>VS Code 扩展等</td><td>在编辑器里直接连账户、跑 SQL / Python</td></tr>
 <tr><td><strong>Drivers vs Connectors</strong></td><td>Driver = <strong>通用协议</strong>（JDBC / ODBC）；Connector = <strong>针对某语言或某系统</strong>（Python、Spark、Kafka、Node.js）</td><td>题干出现具体语言/系统名 → <strong>connector</strong>；出现 JDBC/ODBC → <strong>driver</strong></td></tr>
+<tr><td><strong>SnowCD</strong>（Connectivity Diagnostic）</td><td>独立命令行工具，跑一系列网络检查</td><td>题干出现 <code>network connectivity</code>/DNS/代理/防火墙/端点是否可达 → <strong>SnowCD</strong>，不是 SnowSQL/CLI（能跑 SQL ≠ 专门排查网络）</td></tr>
 </tbody>
 </table>
 <blockquote class="key core">
 <p><strong>★ 通用答案模式：Snowflake 的管理操作基本都有<u>两条路</u>——Snowsight UI 和 SQL。</strong>问「怎么创建/配置 XX」时，UI 与 SQL 通常<strong>都对</strong>（CLI、REST API、connector 本质也是发 SQL）。<strong>看到「只能用 SQL」「只能在 UI 里」先怀疑。</strong></p>
 <p>⚠️ <strong>已知例外：<code>PUT</code> / <code>GET</code> 不能在 Snowsight worksheet 里跑</strong>，必须用 SnowSQL 或驱动。</p>
+<p>⚠️ <strong>Snowsight 图表只有 6 种</strong>：<code>Bar / Line / Scatterplot / Heatgrid / Scorecard / Pie</code>。<strong>Box plot 不在里面</strong>——它是统计分析常见图，但 Snowsight 是轻量 BI，别按统计学直觉推。</p>
 </blockquote>
 <h3>对象层级</h3>
 <pre><code>Organization
@@ -391,6 +393,7 @@ Account → Database → Schema → Object （对象参数）
 <p><strong>★ 多集群模式不是「选项」，是 MIN/MAX 两个数字的关系<u>隐式决定</u>的。</strong>Snowflake <strong>没有</strong>任何「模式」字段可填 —— 决定它的只有 <code>MIN_CLUSTER_COUNT</code> 和 <code>MAX_CLUSTER_COUNT</code>。<br>
 （<code>WAREHOUSE_TYPE</code> <strong>确实存在</strong>，但它的值只有 <code>STANDARD</code> / <code>SNOWPARK-OPTIMIZED</code>，与多集群无关——别被这个真参数名骗过去。）</p>
 <p><strong>口诀：min ≠ max 会伸缩，min = max 全打开。</strong></p>
+<p>⚠️ <strong>排队时该调 <code>MAX_CLUSTER_COUNT</code>，不是 <code>MIN_CLUSTER_COUNT</code></strong>：MIN 是<strong>底薪</strong>——常驻集群数，闲时也照烧 credit；MAX 是<strong>上限</strong>——排队时按需自动开，闲时自动缩回。提高 MIN 也能"消除"排队但是浪费钱，不是 recommended way。<strong>唯一该调高 MIN 的场景</strong>：负载可预测、持续高并发、不想要冷启动延迟（如每天固定时段的 BI 高峰）——这时候 Maximized（MIN=MAX）反而合理。</p>
 </blockquote>
 <blockquote class="key core">
 <p><strong>★ 缩容（scale in）关的是<u>最闲（least-loaded）</u>的集群，不是最忙的。</strong>最闲集群上查询少，能挪去别的集群（redistribute）；最忙的正在扛大量查询，关了挪不动。</p>
@@ -460,6 +463,7 @@ Account → Database → Schema → Object （对象参数）
 <p><strong>★ AUTO_SUSPEND 的关联陷阱</strong>：<strong>单位是秒不是分钟</strong>（600 = 10 分钟）；<strong>0 或 NULL = 永不挂起</strong>，会一直烧 credit。<br>
 挂起会丢 warehouse <strong>本地 SSD 缓存</strong>，设太短则缓存反复失效 → 常见建议 <strong>5–10 分钟</strong>；间歇性负载可更短以省钱。<br>
 <strong>Result Cache 不受影响</strong>——它在云服务层，warehouse 挂起照样命中，24 小时有效。</p>
+<p>⚠️ <strong>两个 TIMEOUT 分清楚</strong>：<code>STATEMENT_QUEUED_TIMEOUT_IN_SECONDS</code>=<strong>排队</strong>等多久放弃（默认 <strong>0=永不超时</strong>）；<code>STATEMENT_TIMEOUT_IN_SECONDS</code>=开始<strong>跑</strong>之后多久被砍（默认 <strong>172800 秒=2天</strong>）。<strong>QUEUED 管等，无 QUEUED 管跑</strong>——题干出现 "contention/挤/等" 找前者。</p>
 </blockquote>
 <h4>什么时候该「关掉」auto-suspend</h4>
 <blockquote class="key">
@@ -846,6 +850,7 @@ ACCOUNTADMIN        账户内顶层，包含 SYSADMIN + SECURITYADMIN
 </table>
 <p><strong>★ 最快的判据：凡是「要选版本」的功能，一律需要配置。</strong>脱敏、行访问、Tri-Secret 都是 Enterprise/Business Critical 起——Snowflake 不会把付费功能默认打开。<strong>反过来，全版本都有的基础保护（加密、TT、Fail-safe）才可能是自动的。</strong></p>
 <p>次判据：<strong>名字里有 <code>policy</code> 的东西没有一个是自动的</strong>——policy 必须先 <code>CREATE</code> 再 <code>ALTER … SET</code> 绑上去。</p>
+<p>⚠️ <strong>表 owner ≠ 能改 Masking Policy</strong>：谁能改表和谁能改策略是<u>两套独立权限</u>——表归表 owner 管，策略归<strong>策略的 owner</strong>或有 <code>APPLY MASKING POLICY</code> 的角色管。「我是这张表的 owner」不能过度推广成「表上绑的一切我都能改」。</p>
 </blockquote>
 <blockquote class="key core">
 <p><strong>★ 同一组 CDP 选项有<u>两根不同的轴</u>，先看题干问的是哪根：<code>不需要配置</code> ≠ <code>额外占存储</code>。</strong></p>
@@ -944,7 +949,7 @@ ACCOUNTADMIN        账户内顶层，包含 SYSADMIN + SECURITYADMIN
 </thead>
 <tbody>
 <tr><td><code>QUERY_HISTORY</code></td><td>每条 SQL 的执行详情、耗时、扫描字节</td></tr>
-<tr><td><code>ACCESS_HISTORY</code></td><td>对象 / <strong>列级</strong>读写血缘 —— ⚠️ <strong>Enterprise+</strong></td></tr>
+<tr><td><code>ACCESS_HISTORY</code></td><td>对象 / <strong>列级</strong>读写血缘：who/when/what query 读写了哪些对象和列 —— ⚠️ <strong>Enterprise+</strong>。<strong>直接字段才算它的 benefit</strong>；"哪些表从没人用过"要自己做集合减法（全部表 − 出现过的表），是加工结果，不算它直接给的</td></tr>
 <tr><td><code>LOGIN_HISTORY</code></td><td>登录成功 / 失败记录</td></tr>
 <tr><td><code>METERING_HISTORY</code></td><td><strong>账户内所有计费对象</strong>（warehouse + Cloud Services + serverless 功能如 Snowpipe/SOS）的 credit 消耗，<strong>按小时粒度</strong>逐行记录</td></tr>
 <tr><td><code>WAREHOUSE_METERING_HISTORY</code></td><td><strong>只含 warehouse</strong> 消耗的 credit（不含 serverless）</td></tr>
@@ -1090,7 +1095,7 @@ ACCOUNTADMIN        账户内顶层，包含 SYSADMIN + SECURITYADMIN
 </tbody>
 </table>
 <blockquote class="key core">
-<p><strong>★ 删对象用 <code>DROP</code>，删文件用 <code>REMOVE</code>，加载完自动清用 <code>PURGE = TRUE</code>。</strong></p>
+<p><strong>★ 删对象用 <code>DROP</code>，删文件用 <code>REMOVE</code>，加载完自动清用 <code>PURGE = TRUE</code>，删表里的行用 <code>DELETE</code>。</strong>四者不是同义词：对象 vs 文件 vs 行，别混用。</p>
 <p>⚠️ <strong><code>DROP FILE</code> 不存在。</strong><code>DROP</code> 是 DDL，只作用于<u>数据库对象</u>；stage 上的文件不是对象，就是躺在云存储里的文件。<br>
 <code>DROP STAGE my_stage</code> = 删掉整个 stage 对象（连里面文件一起没）；<code>REMOVE @my_stage/path/</code> = 只删文件，stage 还在。</p>
 <p><code>REMOVE @my_stage PATTERN='.*\.csv'</code> 可按正则删。</p>
@@ -1326,10 +1331,10 @@ ACCOUNTADMIN        账户内顶层，包含 SYSADMIN + SECURITYADMIN
 </tbody>
 </table>
 <blockquote class="key">
-<p><strong>★ 卸载的两个默认值（常和格式一起考）：</strong>默认<strong>自动切成多个文件</strong> → 要单文件设 <code>SINGLE = TRUE</code>（上限 <strong>5 GB</strong>）；默认<strong>自动 gzip 压缩</strong>（<u>指 CSV / JSON</u>）→ 不压缩要设 <code>COMPRESSION = NONE</code>。</p>
+<p><strong>★ 卸载的两个默认值（常和格式一起考）：</strong>默认<strong>自动切成多个文件</strong> → 要单文件设 <code>SINGLE = TRUE</code>（上限 <strong>5 GB</strong>）；默认<strong>自动 gzip 压缩</strong>（<u>指 CSV / JSON</u>）→ 不压缩要设 <code>COMPRESSION = NONE</code>。<code>PUT</code> 上传本地文件同样默认<strong>自动 gzip</strong>，除非 <code>AUTO_COMPRESS = FALSE</code>——三处默认压缩（卸载 CSV/JSON、卸载 Parquet=SNAPPY、PUT 上传）分开记，别当成一个值。</p>
 </blockquote>
 <blockquote class="key core">
-<p><strong>★ <code>OBJECT_CONSTRUCT(*)</code> 常用于卸载</strong>：把普通表的行列打包成一个 JSON 对象再导出，是 <code>COPY INTO &lt;location&gt;</code> 的常见搭配。</p>
+<p><strong>★ <code>OBJECT_CONSTRUCT(*)</code> 常用于卸载</strong>：把普通表的行列打包成一个 JSON 对象再导出，是 <code>COPY INTO &lt;location&gt;</code> 的常见搭配。<strong>多列表卸载成 JSON/Parquet 必须包一层</strong>——直接 <code>SELECT *</code> 卸载多列会报错，<code>OBJECT_CONSTRUCT(*)</code> 不是锦上添花而是硬要求。</p>
 <p>⚠️ <strong><code>PARSE_JSON</code> 方向反了会误选</strong>：它是<u>加载</u>方向的工具（字符串 → VARIANT），卸载是反方向（VARIANT/表数据 → 文件），根本用不上 <code>PARSE_JSON</code>。看到 unload 场景题里的 <code>PARSE_JSON</code> 选项，先问方向对不对。</p>
 </blockquote>
 <blockquote class="key core">
@@ -1815,6 +1820,7 @@ SELECT * FROM my_mv m JOIN other_table t ON m.id = t.id;
 <li>Standard 版：<strong>0 或 1 天</strong>；Enterprise+ 永久表：<strong>最多 90 天</strong></li>
 <li><code>DATA_RETENTION_TIME_IN_DAYS</code> 控制，<strong>四个层级都能设：Account → Database → Schema → Table，最细到 Table</strong>。下层继承上层、可覆盖；在 DB/Schema 上设值会作用于其下所有已有和新建对象（除非对象自己显式设过）</li>
 <li>设为 <strong>0 = 关闭 Time Travel</strong>：不能 <code>UNDROP</code>、不能 <code>AT</code>/<code>BEFORE</code>。但永久表<strong>仍有 7 天 Fail-safe</strong>（只能找 Snowflake 支持，自己碰不到）</li>
+<li><strong><code>CREATE OR REPLACE</code> 本质是 <code>DROP</code> + <code>CREATE</code></strong>，不是"覆盖内容"。旧对象进了 Time Travel，理论上能 <code>UNDROP</code>——但<strong>新对象已经占用同名</strong>，直接 <code>UNDROP</code> 会因命名冲突报错，得先把新对象<strong>改名腾位置</strong>，再 <code>UNDROP</code> 旧的</li>
 <li><strong>Fail-safe</strong>：Time Travel 结束后额外 <strong>7 天</strong>，<strong>仅永久表</strong>，<strong>只能由 Snowflake 支持人员恢复</strong>，用户无法查询，且<strong>照常收存储费</strong></li>
 </ul>
 <blockquote class="key core">
@@ -1902,6 +1908,7 @@ SELECT * FROM my_mv m JOIN other_table t ON m.id = t.id;
 <li>消费者对共享数据<strong>只读</strong>，且<strong>不能再共享（no reshare，默认）</strong></li>
 <li><strong>不能</strong>放进 share 的：<strong>普通 View</strong>（必须 Secure View）、<strong>普通物化视图</strong>、Stored Procedure、Stage / Pipe / Task、Sequence。<strong>记：共享的东西必须是 Secure 的</strong>——普通 view 会暴露底层定义</li>
 <li>消费方要 <code>CREATE DATABASE … FROM SHARE provider.share_name</code> 才能用；该库<strong>只读</strong>，不能建表、不能 DML</li>
+<li>Share 是<strong>容器不是查询</strong>：<code>CREATE SHARE</code> 先建一个空壳，再用 <code>GRANT … TO SHARE</code> 逐个塞对象进去。<strong>不存在</strong> <code>CREATE SHARE AS SELECT ...</code> 这种写法——那是把 View 的语法搬过来的造词陷阱</li>
 </ul>
 <blockquote class="key core">
 <p><strong>★ Revoke 权限 = 掐断指针，consumer 端瞬间归零，没有任何"降级但可用"的中间态。</strong>因为从头到尾都没复制过数据——consumer 一直靠的是指向 provider 存储的元数据引用，revoke 就是掐断这条引用，不存在"留一份快照/副本"这种缓冲机制，更不会让 consumer 突然开始承担存储费（它本来就没存过东西）。</p>
