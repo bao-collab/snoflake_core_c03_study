@@ -1317,6 +1317,7 @@ ACCOUNTADMIN        账户内顶层，包含 SYSADMIN + SECURITYADMIN
 <blockquote class="key core">
 <p><strong>★ 入六出三 —— 出去的只有 CSV、JSON、Parquet；<code>XAO</code>（XML、AVRO、ORC）只进不出。</strong></p>
 <p><strong>为什么：能卸载的三个都是「通用交换格式」</strong>（CSV/JSON 谁都能读，Parquet 是分析生态的通用列存）；<strong>XML / AVRO / ORC 绑定特定生态</strong>（老式系统 / Kafka·Hadoop / Hive），所以只让进不让出。</p>
+<p><strong>支持的文件格式总共就 6 个</strong>：CSV（结构化）+ JSON / Avro / ORC / Parquet / XML（半结构化）。<strong>EDI、YAML 等一律不支持</strong>——题干里出现这类格式名，直接排除。</p>
 </blockquote>
 <table>
 <thead>
