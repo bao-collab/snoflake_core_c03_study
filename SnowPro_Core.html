@@ -698,7 +698,7 @@ ACCOUNTADMIN        账户内顶层，包含 SYSADMIN + SECURITYADMIN
 - 自定义角色应授予 <strong>SYSADMIN</strong>，这样 SYSADMIN 才能管理所有对象
 - ACCOUNTADMIN 应<strong>尽量少人拥有</strong>，且必须启用 <strong>MFA</strong>
 - 只有 ACCOUNTADMIN 能看到账单、创建 Resource Monitor、管理 reader account
-- <strong>Secondary roles</strong>：一个会话中可同时激活多个角色的权限（<code>USE SECONDARY ROLES ALL</code>）
+- <strong>Secondary roles</strong>：一个会话中可同时激活多个角色的权限（<code>USE SECONDARY ROLES ALL</code>）。<strong>只有两档：<code>ALL</code>（全开）/ <code>NONE</code>（全关，只用 primary role），没有挑单个角色加进去的语法</strong>——<code>USE SECONDARY ROLES ADD &lt;role&gt;</code> 是编造的，不存在。
 - <strong>Database roles</strong>：作用域限定在某个数据库内，不能授予账户级对象权限，主要用于共享场景（share 里可以包含 database role，用于给消费者做细粒度授权）
 - ⚠️ <strong>Secondary roles 的坑</strong>：激活多个角色只是权限<strong>并集</strong>；<strong>创建对象时 owner 仍然是 primary role</strong>。场景题爱考这一句</p>
 <p><strong>访问对象需要的权限链</strong>：要查一张表，需要 database 的 <code>USAGE</code> + schema 的 <code>USAGE</code> + table 的 <code>SELECT</code> + warehouse 的 <code>USAGE</code>。缺一不可 —— 这是常考的"为什么用户看不到表"。</p>
