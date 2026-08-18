@@ -379,7 +379,7 @@ Account → Database → Schema → Object （对象参数）
 <li><strong>多集群模式</strong>：</li>
 <li><strong>Maximized</strong>（min = max）：一直全开，用于可预测的高并发</li>
 <li><strong>Auto-scale</strong>（min &lt; max）：按需增减</li>
-<li><strong>Scaling policy</strong>：<code>Standard</code> vs <code>Economy</code>，见下方 ★ 口诀</li>
+<li><strong>Scaling policy</strong>：<code>Standard</code> vs <code>Economy</code>，见下方 ★ 口诀。<strong>只在 Auto-scale（MIN&lt;MAX）下有意义</strong>——Maximized（MIN=MAX）全部集群从头到尾都开着，没有"要不要多启一个"的决策，策略无从谈起。<strong>Serverless 功能（Snowpipe / Task serverless / Search Optimization 等）不用 warehouse</strong>，Scaling policy 跟它们无关。</li>
 <li><strong>Snowpark-optimized</strong>：内存/CPU 加强，用于大内存的 ML / Snowpark 工作负载</li>
 </ul>
 <blockquote class="key core">
