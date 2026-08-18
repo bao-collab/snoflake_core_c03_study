@@ -709,7 +709,6 @@ ACCOUNTADMIN        账户内顶层，包含 SYSADMIN + SECURITYADMIN
 <p><strong>为什么必须挂</strong>：SYSADMIN 的定位是<u>能管账户内所有对象</u>。不挂 → 自定义角色拥有的对象 SYSADMIN <strong>看不见也管不了</strong>，角色树上出现<u>孤儿分支</u>，只有 ACCOUNTADMIN 能穿透；一旦持有者离职，管理链就断了。<u>挂上去，整棵树重新完整。</u></p>
 <p>⚠️ <strong>时序陷阱：题干写 <code>after creating</code>，那所有描述「创建时该用谁」的选项（如「用 SYSADMIN 创建」）直接出局</strong>——它们不是错答案，是<u>在答另一个问题</u>。<strong>先用题干的时间词筛掉整类选项，再在剩下的做排除法。</strong></p>
 <p>⚠️ <strong>挂给 <code>PUBLIC</code> / 挂给 <code>ACCOUNTADMIN</code> 都是错的</strong>：PUBLIC 人人都有，等于把权限发给全账户；ACCOUNTADMIN 已经继承 SYSADMIN，挂那儿等于绕过正常管理层。</p>
-<p><strong>题型二 —— 问"推荐做法"（不带 after creating 时序词）：正确答案是两条都选</strong>：① 直接用 <strong>SYSADMIN</strong> 建对象；② 用自定义角色建，再 <code>GRANT ROLE</code> 给 SYSADMIN。两条殊途同归，落点都是 SYSADMIN 能管到对象。<strong>只有当题干明确是「创建之后该做什么」时，「用 SYSADMIN 创建」才被题目排除在外</strong>——不要把两种题型的排除逻辑搞混。</p>
 </blockquote>
 <blockquote class="key core">
 <p><strong>★ Snowflake 访问控制 = <code>RBAC</code> + <code>DAC</code> 两个模型的混合。</strong>问 <code>which models does Snowflake use</code> → <strong>就这两个</strong>。</p>
