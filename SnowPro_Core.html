@@ -2022,6 +2022,10 @@ SELECT * FROM my_mv m JOIN other_table t ON m.id = t.id;
 <p>⚠️ <strong>「类型」问的是<u>发布物</u>，不是<u>参与方</u>。</strong>Provider / Consumer 是<strong>角色</strong>，不是 listing 类型——题干问 <code>types of listings</code> 时它们全是干扰项。</p>
 <p>⚠️ <strong>官方术语是 <code>Provider</code>，从来不叫 <code>Vendor</code>。</strong>选项里出现非官方词汇 → 先怀疑。（同 <code>key partitions</code>、<code>Hive connector</code>）</p>
 </blockquote>
+<h4>CREATE DATA EXCHANGE LISTING 权限边界</h4>
+<blockquote class="key">
+<p>能创建 listing → 编辑 listing → 提交审批发布，是「从无到有做出条目并送审」这条链。<strong>能改的是「内容」，不能改的是「身份」</strong>：<strong>properties（描述、样例、价格等）随便改</strong>；<strong>name（listing 名称，身份标识）创建后锁死，不能改</strong>。</p>
+</blockquote>
 <h4>Listing 的跨区域行为（偏难，考纲 5.3）</h4>
 <blockquote class="key core">
 <p><strong>★ 核心区分：listing（挂牌）≠ data（数据）。</strong><br>
