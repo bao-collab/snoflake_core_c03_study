@@ -1760,6 +1760,7 @@ SELECT * FROM my_mv m JOIN other_table t ON m.id = t.id;
 <p><strong>口诀：Scala 没表（UDTF）。</strong>整张矩阵只有这一个格是空的，记这一个洞即可。</p>
 <p>另：<strong>Stored Procedure 还多一种语言 —— Snowflake Scripting</strong>（SQL 的过程化扩展，<code>BEGIN…END</code>），<strong>UDF 不能用</strong>。</p>
 </blockquote>
+<p><strong>UDTF 调用语法：</strong><code>SELECT * FROM TABLE(my_udtf(col1))</code>——UDTF 返回多行多列，必须包在 <code>TABLE()</code> 里放进 <code>FROM</code>；Scalar UDF 直接进 <code>SELECT</code>；Stored Procedure 只能 <code>CALL</code>，不能出现在查询里。</p>
 <blockquote class="key">
 <p>⚠️ <strong>做题提醒：这类语言题题库很可能是旧的。</strong>老题只认 <strong>SQL + JavaScript</strong>（Snowpark 语言尚未支持的年代）。<br>
 <strong>策略</strong>：优先按官方现状答；若选项里<u>明显排除了 Python/Java/Scala</u>，说明这题在考老版本，按 <strong>SQL + JavaScript</strong> 走。<strong>答错这类题不代表你记错了，是题库老了——别因此动摇正确的知识。</strong></p>
