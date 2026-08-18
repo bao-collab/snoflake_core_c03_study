@@ -1433,6 +1433,7 @@ FROM orders t,
 </blockquote>
 <ul>
 <li><strong>Stream</strong>：CDC，记录表的变更（INSERT/UPDATE/DELETE）。是"偏移量指针"不是数据副本。消费（DML 中读取）后自动前进</li>
+<li><strong>Stream 变 stale 的原因</strong>：Stream 靠 Time Travel 保存变更记录，超过表的 retention 期没消费 → 底层数据被清掉 → stream 过期读不出来。<strong><code>MAX_DATA_EXTENSION_TIME_IN_DAYS</code></strong>（表参数）能<strong>自动延长有未消费 stream 的表的 retention</strong>，防止 stale——默认 14 天，最大 90 天，设 0 = 关闭自动延长。<strong><code>STALE_AFTER</code> 只是只读属性</strong>（<code>SHOW STREAMS</code> 里显示"什么时候过期"），不能设置来防止过期。</li>
 <li>类型：Standard（含所有变更）、Append-only（仅插入，开销更小）、Insert-only（外部表用）</li>
 <li><strong>Task</strong>：调度 SQL，可用 CRON 或 interval。可串成 <strong>DAG</strong>（一个 root task + 子 task，最多 1000 个）。可用 warehouse 或 serverless。<br>
 <strong>★ 一个 Task = <u>一条 SQL 语句</u> + 一个调度。<code>AS</code> 后面只能跟单条语句</strong>，选项写 <code>a set of SQL statements</code> / <code>multiple statements</code> → <strong>False</strong>。<br>
