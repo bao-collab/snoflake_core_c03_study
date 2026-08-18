@@ -1768,10 +1768,6 @@ SELECT * FROM my_mv m JOIN other_table t ON m.id = t.id;
 <p><strong>不保证 gap-free</strong>：Sequence 只保证<strong>递增 + 唯一</strong>，不保证连续。原因：并发下 Snowflake 会给每个 session 预分配一批号，用不完就浪费 → 跳号。「Sequences guarantee gap-free values」这类选项<strong>永远是错的</strong>。</p>
 <p><strong>Sequence ≠ AUTOINCREMENT / IDENTITY</strong>：后者绑在表的某一列上；前者是<strong>独立对象</strong>，可被多张表共用。</p>
 </blockquote>
-<blockquote class="key">
-<p>⚠️ <strong>做题提醒：这类语言题题库很可能是旧的。</strong>老题只认 <strong>SQL + JavaScript</strong>（Snowpark 语言尚未支持的年代）。<br>
-<strong>策略</strong>：优先按官方现状答；若选项里<u>明显排除了 Python/Java/Scala</u>，说明这题在考老版本，按 <strong>SQL + JavaScript</strong> 走。<strong>答错这类题不代表你记错了，是题库老了——别因此动摇正确的知识。</strong></p>
-</blockquote>
 <h3>DML 的表锁与并发阻塞</h3>
 <blockquote class="key core">
 <p><strong>★ 判断标准只有一句：这条命令需不需要「先找到已有的行再改它」？</strong><br>
