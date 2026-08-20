@@ -53,8 +53,8 @@ All domain files + study plan reorganized to the official 1.1–5.3 objective st
 - **Domain 1 — Metadata**: Confused it with storage layer.
   ✓ Metadata lives in Cloud Services (min/max, row counts per partition)
   Refs: [Key Concepts & Architecture](https://docs.snowflake.com/en/user-guide/intro-key-concepts) · [Micro-partitions & Data Clustering](https://docs.snowflake.com/en/user-guide/tables-clustering-micropartitions)
-- **Domain 1 — Cloud Services vs Cloud Provider**: Confused the two on 2026-07-06 and 2026-07-11. **Correct on 2026-07-21 refresher re-quiz** — resolved, drop from active weak list unless missed again.
-  ✓ Cloud Services is Snowflake's own brain; AWS/Azure/GCP are just the infrastructure underneath
+- **Domain 1 — Cloud Services vs Cloud Provider**: Confused the two on 2026-07-06 and 2026-07-11. Marked resolved after 2026-07-21 refresher re-quiz — **but recurred 2026-08-19** (4 hits in the 80-question weakpoint sample: micro-partition location, column compression layer, Cloud Services vs Database Storage). **Reopened — do not treat as resolved.** See `weakpoints-2026-08-19.md` cluster 5.
+  ✓ Cloud Services is Snowflake's own brain (query optimizer, metadata, result cache); Database Storage layer physically holds the compressed micro-partitions; AWS/Azure/GCP are just the infrastructure underneath both
   Refs: [Key Concepts & Architecture](https://docs.snowflake.com/en/user-guide/intro-key-concepts) · [Supported Cloud Platforms](https://docs.snowflake.com/en/user-guide/intro-cloud-platforms)
 - **Domain 1 — Cloud Services layer responsibilities & caches** (added 2026-07-11, re-quiz ~3/6): didn't know result cache serves queries without a warehouse (Q2); placed micro-partition metadata in storage layer again (Q3); knew metadata answers COUNT(*) but couldn't name the layer (Q5).
   ✓ Cloud Services owns: query optimizer, metadata store, result cache, metadata cache, auth, transactions, pruning
@@ -121,6 +121,8 @@ Baseline: 1452-question bank, 47% on first exposure.
 | 8/16 (日) 阶段二第 2 天 | 200 题（4h） | **全天（含跨零点续做）176 题，正确 97 / 错误 79，当日正确率 55%**；累计 330 题 = 正确 189 / 错误 141（57%）。分三段：**午前 46 题 @ 48%，午后 50 题 @ 66%，晚间+夜间 80 题 @ 53%** | 未达配额（176/200）。夜间续做正确率回落（46% vs 午后 66%），符合疲劳假设。仅复盘 3 题（REFERENCE_USAGE / Egress / Revoke，均 D5），样本太小不出分布表 |
 | 8/17 (一) | 130 题（不追欠，优先补 D3）（2.4h） | 累计 268/192=460 题，58%；当日新增 81 题，正确 52/错误 29（64%）。另：错题复盘单独计数，累计 11/5=16 题，69% | |
 | 8/18 (二) | 进行中 | 做到第 484 题（题库更新后总量 1468）。后续切手机刷题，正确率/错题解析明天补 | 今日已边做边复盘 7 道错题（Sequence、Data Exchange Listing 权限、Stream stale、Scaling policy 等），已落笔记 |
+| 8/19 (三，手机刷题) | — | 累计快照：**正确 375 / 错误 281 = 656 题，57.00%**（8/20 早上报数，对应 8/19 刷题结果） | 对比 8/17 累计 460 题@58% → 又刷了 ~196 题，正确率基本持平（57% vs 58%，−1pt，在噪声范围内）。错题域分布待错题截图批处理后补充，见 `weakpoints-2026-08-19.md`（占位，等首批截图） |
+| 8/20 (四) | — | 当日又处理一批错题截图：24 题（App Q659–Q691），分布 D3(8) > D4(6) > D2(5) > D1(4) > D5(1) | D3 重新成为占比最高域，回到 8/16–8/17 的模式。详见 `weakpoints-2026-08-20.md`。三层架构归属（Cloud Services vs Compute）**第三次复发**，已判定为纯记忆/recall gap，不再是笔记覆盖问题 |
 
 **⏰ 待复习：C03 精读①**（8/17 首读）→ 排到 **8/19 或 8/20** 二刷一次（间隔 2-3 天，防止遗忘），8/22 buffer day 前必须做完二刷。
 
@@ -134,6 +136,14 @@ Baseline: 1452-question bank, 47% on first exposure.
 | MIN_CLUSTER_COUNT vs MAX_CLUSTER_COUNT（排队该调哪个） | 2 | 8/17 | 8/17 |
 | 文件格式 vs 数据类型（JSON≠VARIANT、Avro 卸载方向） | 2 | 8/17 | 8/17 |
 | 编造不存在的语法（如 `USE SECONDARY ROLES ADD <role>`） | 1 | 8/18 | 8/18 |
+| **存储/计算层归属**（micro-partition 位置、列压缩发生在哪层、Cloud Services vs Database Storage）—⚠️ 7/21 曾判定"resolved"，8/19 复发，**8/20 第三次复发**，判定为纯 recall gap，需专项计时演练 | 5 | 7/06 | 8/20 |
+| Unstructured data URL 函数区分（File URL / Scoped URL / Pre-signed URL / GET_RELATIVE_PATH） | 5 | 8/15 | 8/19 |
+| Query Profile 读图（orange bar、UnionAll+Aggregate、外部函数统计、Profile 定义本身、details 区域能确定什么） | 6 | 8/19 | 8/20 |
+| PUT/GET/COPY 参数与机制细节（非方向类：加密时点、LS 语法、FORCE 参数、推荐卸载方式、client/server-side 加密类型） | 8 | 8/19 | 8/20 |
+| 角色/权限最小要求类（ORGADMIN/ACCOUNTADMIN/SYSADMIN、外部 stage GET 权限、secure view OWNERSHIP） | 5 | 8/19 | 8/19 |
+| 浮点数精度截断（CSV/JSON 截到 ~(15,9) vs Parquet 保全精度） | 3 | 8/19 | 8/19 |
+| 具体数字类记忆题（unload 单文件 5GB、ACCESS_HISTORY 保留 365 天、network policy 每账号/用户 1 个、parquet 查询推荐 256–512MB） | 4 | 8/20 | 8/20 |
+| 多选题（Choose two）干扰项辨识力弱（8/24 题因此丢分） | 8 | 8/20 | 8/20 |
 
 ## 8/16 EOD 汇总（18:17 报数）
 

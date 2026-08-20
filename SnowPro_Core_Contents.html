@@ -219,6 +219,7 @@ footer{text-align:center;color:var(--mute);font-size:11.5px;padding:26px 16px 10
 <p>⚠️ 易放错：<strong>Result Cache 和元数据都在 Cloud Services</strong>（命中时不需要 warehouse）；只有 Local Disk/SSD Cache 在 Compute。micro-partition 拆两半：元数据（MIN/MAX、剪枝用）在 Cloud Services，物理数据（压缩字节）在 Storage——<code>physical storage</code>/<code>actual data</code> → Storage，<code>metadata about</code>/<code>statistics</code> → Cloud Services。</p>
 <p>⚠️ <code>execution PLAN</code> ≠ <code>execution</code>：生成计划（optimizer：解析、分区裁剪、JOIN 顺序）在 Cloud Services；执行在 Compute。看到 <code>execution</code> 先看后面有没有 <code>plan</code>。</p>
 <p><strong>★ 三层里只有 Compute 用户可配置</strong>，另两层全托管——问 <code>which layer can the user configure</code> → Virtual Warehouse。「用它」≠「配它」：建角色/看 History 是消费服务；改 <code>WAREHOUSE_SIZE</code>/<code>AUTO_SUSPEND</code>/multi-cluster 才是调参数。原因：计算层是你租用的弹性资源，按需付费必须可调；Storage/Cloud Services 是托管承诺。</p>
+<p>⚠️ <strong>反复考的一条（8/19 复发两次）：「Snowflake 用什么存储单元支持高效查询」→ <code>Micro-partitions</code>，不是 <code>Blobs</code></strong>（Blobs 是底层云对象存储的通用叫法，不是 Snowflake 自己定义的存储单元概念）；<strong>「哪一层把数据整理成压缩列式格式」→ <code>Database Storage</code>，不是 <code>Cloud Services</code></strong>（Cloud Services 只管"怎么查"，不管"怎么存"）；<strong>「每列的压缩发生在哪」→ 在 micro-partition 内部逐列压缩，不是"云存储自己处理压缩"</strong>——压缩是 Snowflake 写入时做的，不是甩给云厂商的。</p>
 </blockquote>
 <p><strong>必记</strong>：三层是"存算分离 + 服务解耦"。这是 Snowflake 所有优势（弹性、并发隔离、零拷贝克隆）的根源。看到题目问"为什么两个团队互不影响"→ 独立 warehouse。</p>
 <blockquote class="key">
@@ -537,7 +538,8 @@ Account → Database → Schema → Object （对象参数）
 <p><strong>别选错</strong>：clustering key 应选<strong>低到中基数</strong>且常用于 WHERE / JOIN 的列。选高基数列（如 UUID）是错误答案。</p>
 <blockquote class="key core">
 <p><strong>★ Pruning = 排除/跳过/不读取，不是"利用"什么。</strong>优化器看 micro-partition 元数据（MIN/MAX），确定<u>肯定不含</u>目标数据 → 直接跳过。选项说"利用分区重叠" → 方向反了，剪枝要的恰恰是<strong>重叠少</strong>。</p>
-<p><strong>★ 聚簇看 TB，小表别折腾</strong>——门槛 multi-terabyte，记不住数字就选最大单位。原因：Automatic Clustering 持续烧 credit，收益要盖过成本才划算。</p>
+<p><strong>★ 聚簇看 TB，小表别折腾</strong>——Snowflake 官方建议：表小于约 <strong>1 TB</strong> 前不必考虑 clustering key（门槛 multi-terabyte，记不住确切数字就选最大单位）。原因：Automatic Clustering 持续烧 credit，收益要盖过成本才划算。</p>
+<p><code>SYSTEM$CLUSTERING_INFORMATION</code> 里的 <strong><code>average_overlaps</code></strong>：对每个微分区，数一下<strong>有多少其他分区的值范围与它重叠</strong>，取平均——衡量的是「值范围重叠」，<strong>不是「物理存放位置」</strong>。这个数越大，说明剪枝时越难排除掉分区，越该考虑重聚簇。</p>
 <p>⚠️ <strong>「分区」≠「排序」</strong>：微分区默认按写入顺序存放，<u>不排序</u>；Clustering Key 只是让同值行少落几个分区，不是分区内排序。</p>
 <p>⚠️ <strong>"benefits of micro-partition"</strong> 先分事实 vs 好处：不可变/按写入顺序存是<u>机制事实</u>；剪枝快、免索引、支持 TT 才是<u>真正的 benefit</u>。选项把机制包装成好处（如"数据自动排序"）先查真假再查算不算优点。</p>
 </blockquote>
@@ -659,6 +661,7 @@ Account → Database → Schema → Object （对象参数）
 <blockquote class="key core">
 <p><strong>★ Secure View 的两个代价，一隐私一性能，成对出现：① 视图定义对非 owner 隐藏（<code>GET_DDL</code> / <code>SHOW VIEWS</code> 看不到 SQL 文本）；② 优化器被限制 → <u>比普通视图慢</u>。</strong></p>
 <p><strong>两者是<u>同一个原因</u>的两面：防止推断出未授权的行。</strong>普通视图会把 WHERE 谓词<u>下推</u>到底层表、会因错误信息/执行顺序泄露被过滤掉的行的存在；Secure View <strong>先做安全过滤再谈优化</strong>，谓词下推和分区裁剪都被削弱——<u>安全是靠「少优化」换来的</u>。</p>
+<p>⚠️ <strong>把 secure view 开放给别人（授权/共享）需要的权限是 <code>OWNERSHIP</code></strong>（对该视图对象），<strong>不是 <code>IMPORT SHARE</code></strong>——IMPORT SHARE 是消费方接收 inbound share 时用的权限，跟"我作为 owner 要不要暴露这个视图"是两码事，方向反了。</p>
 <p>⚠️ <strong>它<u>不</u>做的事：不加密数据、不做行级/列级策略、不省存储、不改权限模型。</strong>Secure 只管「别让人反推出来」这一件事。<u>要遮列值用 Masking，要限行用 Row Access Policy——见上面的粒度阶梯。</u></p>
 </blockquote>
 <hr />
@@ -744,7 +747,9 @@ ACCOUNTADMIN        账户内顶层，包含 SYSADMIN + SECURITYADMIN
 <strong>角色分工（考题会直接问）</strong>：<u>IdP</u> = Identity Provider（Okta 等，管认证）；<u>Snowflake</u> = <strong>Service Provider (SP)</strong>，只<u>接受</u>断言。<u>Snowflake 永远是 SP，不会是 IdP。</u></li>
 <li><strong>Key-pair</strong>：用于服务账户/自动化，2048-bit RSA，支持轮换（可同时配两个公钥）</li>
 <li><strong>OAuth</strong>：Snowflake OAuth 或 External OAuth</li>
-<li><strong>Network Policy</strong>：IP 白名单/黑名单，<strong>黑名单优先于白名单</strong>。可设在账户级或用户级，用户级优先。<strong>创建者：ACCOUNTADMIN + SECURITYADMIN</strong>（SYSADMIN 管对象不管安全策略，没份）。</li>
+<li><strong>Network Policy</strong>：IP 白名单/黑名单，<strong>黑名单优先于白名单</strong>。可设在账户级或用户级，用户级优先。<strong>同一时刻账户或某个用户只能绑定 1 个 Network Policy</strong>（不是可以叠加多个）。<strong>创建者：ACCOUNTADMIN + SECURITYADMIN</strong>（SYSADMIN 管对象不管安全策略，没份）。<br>
+⚠️ <strong>查看具体 IP 列表用 <code>DESCRIBE NETWORK POLICY &lt;name&gt;</code>，不是 <code>SHOW NETWORK POLICIES</code></strong>——<code>SHOW</code> 只列出账户里有哪些策略（名字、创建人），不显示白/黑名单里的具体 IP；要看明细必须 <code>DESCRIBE</code> 单个对象，这是 <code>SHOW</code> vs <code>DESCRIBE</code> 通用分工（列表 vs 详情）在这里的具体案例。<br>
+<strong><code>ALLOW_CLIENT_MFA_CACHING</code></strong> 开启后，MFA 验证结果缓存 <strong>4 小时</strong>免重复验证（区别于 <code>MINS_TO_BYPASS_MFA</code> 那种支持人工临时豁免）。</li>
 <li><strong>PrivateLink</strong>（Business Critical 起）：在<strong>你的 VPC 里</strong>建 endpoint，流量走云内网直达 Snowflake，不经公网。<br>
 ⚠️ <strong>它连的是 VPC，不是本地机房。</strong>题干出现 <em>“connect from an <u>on-premise</u> data center”</em> → <strong>False</strong>：本地到 VPC 那一段要靠 <strong>Direct Connect / Site-to-Site VPN</strong>，是两段拼起来的，功劳不能全算给 PrivateLink。</li>
 </ul>
@@ -929,7 +934,7 @@ ACCOUNTADMIN        账户内顶层，包含 SYSADMIN + SECURITYADMIN
 </thead>
 <tbody>
 <tr><td><code>QUERY_HISTORY</code></td><td>每条 SQL 的执行详情、耗时、扫描字节</td></tr>
-<tr><td><code>ACCESS_HISTORY</code></td><td>对象 / <strong>列级</strong>读写血缘：who/when/what query 读写了哪些对象和列 —— ⚠️ <strong>Enterprise+</strong>。<strong>直接字段才算它的 benefit</strong>；"哪些表从没人用过"要自己做集合减法（全部表 − 出现过的表），是加工结果，不算它直接给的</td></tr>
+<tr><td><code>ACCESS_HISTORY</code></td><td>对象 / <strong>列级</strong>读写血缘：who/when/what query 读写了哪些对象和列 —— ⚠️ <strong>Enterprise+</strong>。<strong>直接字段才算它的 benefit</strong>；"哪些表从没人用过"要自己做集合减法（全部表 − 出现过的表），是加工结果，不算它直接给的。<strong>数据保留 365 天</strong></td></tr>
 <tr><td><code>LOGIN_HISTORY</code></td><td>登录成功 / 失败记录</td></tr>
 <tr><td><code>METERING_HISTORY</code></td><td><strong>账户内所有计费对象</strong>（warehouse + Cloud Services + serverless 功能如 Snowpipe/SOS）的 credit 消耗，<strong>按小时粒度</strong>逐行记录</td></tr>
 <tr><td><code>WAREHOUSE_METERING_HISTORY</code></td><td><strong>只含 warehouse</strong> 消耗的 credit（不含 serverless）</td></tr>
@@ -1055,6 +1060,8 @@ ACCOUNTADMIN        账户内顶层，包含 SYSADMIN + SECURITYADMIN
 </table>
 <blockquote class="key">
 <p><strong>★ 「非结构化数据怎么在 Snowflake 里查/给权限？」→ 答案链条是：Stage + Directory Table + URL 函数。</strong>三种 URL：<code>FILE_URL</code>（永久，需权限）· <strong><code>SCOPED_URL</code></strong>（临时，24h，跟当前用户绑定）· <code>PRESIGNED_URL</code>（临时，浏览器可直接开）。<strong>唯一不需要登录 Snowflake 的是 Pre-signed URL</strong>（发外部人/嵌 BI 报表用这个）；Scoped 和 File URL 都要 token/权限，本质是"给已登录的人用"。</p>
+<p>⚠️ <strong><code>GET_RELATIVE_PATH()</code> 不生成 URL</strong>——它只是拿回文件在 stage 里的<u>相对路径字符串</u>（拼 URL 时可能用到，但本身不是一种 URL 类型）。常被塞进"哪些函数能生成访问 URL"的选项里当干扰项，和 <code>BUILD_SCOPED_FILE_URL</code> / <code>GET_PRESIGNED_URL</code> 放一起时先排除它。</p>
+<p><strong>Directory Table 输出列</strong>只有 <code>RELATIVE_PATH</code> / <code>SIZE</code> / <code>LAST_MODIFIED</code> / <code>MD5</code> / <code>ETAG</code> / <code>FILE_URL</code> 这一类文件元数据字段——<strong>没有 <code>FILE_NAME</code> 或 <code>STAGE_NAME</code> 列</strong>（这两个是编的，听着像但不存在）。</p>
 </blockquote>
 <blockquote class="key core">
 <p><strong>★ 最高频的一条：<code>PUT</code> / <code>GET</code> 只对 internal stage 有效。</strong>External stage 要用云厂商自己的工具上传下载。</p>
@@ -1084,6 +1091,10 @@ ACCOUNTADMIN        账户内顶层，包含 SYSADMIN + SECURITYADMIN
 <p><strong>★ 同一条分界线也适用于「看」：<code>LIST @stage</code> 看<u>文件</u>，<code>SHOW STAGES</code> 看<u>对象</u>。</strong><br>
 <code>SHOW</code> 后面<strong>永远跟复数的对象类型名</strong>（<code>SHOW TABLES</code> / <code>SHOW STAGES</code> / <code>SHOW WAREHOUSES</code>），<strong>绝不会跟 <code>@</code></strong>——<u>看到 <code>SHOW @…</code> 直接排除</u>。<br>
 <strong>带 <code>@</code> 的命令都是文件级的</strong>：<code>LIST</code> / <code>REMOVE</code> / <code>PUT</code> / <code>GET</code> / <code>SELECT … FROM @stage</code>。</p>
+</blockquote>
+<blockquote class="key">
+<p><strong>★ <code>PUT</code> 在数据<u>离开本机之前</u>就完成加密+GZIP压缩</strong>（客户端本地做的，不是等数据到了 Snowflake 微分区才加密）——"何时加密"这类题，只要看到 PUT，答案就是"上传前/发送前"。</p>
+<p><strong><code>LS @~;</code> 是 <code>LIST @~;</code> 的合法缩写</strong>，<code>@~</code> 固定指向<u>当前用户的私有 stage</u>（不是数据库/schema 里的 named stage）。</p>
 </blockquote>
 <h4>四个命令的方向（考试爱组合考）</h4>
 <pre><code>本地机器  --PUT--&gt;   Internal Stage  --COPY INTO 表--&gt;    表
@@ -1276,6 +1287,7 @@ ACCOUNTADMIN        账户内顶层，包含 SYSADMIN + SECURITYADMIN
 <strong>卸载</strong>：<code>MAX_FILE_SIZE</code> 默认 <strong>16 MB</strong>——这是<u>参数默认值</u>。<br>
 <strong>进大出小，都是为了并行跑得起来。</strong></p>
 <p>⚠️ 干扰项 <strong>5 MB</strong> 是 S3 分段上传的最小分片，与 Snowflake 无关；<strong>5 GB</strong> 才是真数字——<code>SINGLE = TRUE</code> 时的单文件上限。<strong>5 MB / 5 GB 别看混。</strong></p>
+<p>⚠️ <strong>还有第四个数字，容易和「装载 100–250 MB」搞混</strong>：查询 external table 时，Snowflake 推荐的 <strong>Parquet 文件大小是 256–512 MB</strong>（为了优化并行扫描的分片数）。这是「<u>查询</u>外部表」场景的建议值，和「<u>装载</u>进普通表」的 100–250 MB 是两个不同场景、两个不同数字——题干问 querying external table 时用 256–512 MB，问 loading 时用 100–250 MB。</p>
 </blockquote>
 <blockquote class="key core">
 <p><strong>★ 报错 <code>Max LOB size (16777216) exceeded</code> → 答案是 <code>STRIP_OUTER_ARRAY = TRUE</code>，不是拆文件。</strong>（LOB = Large Object，即 VARIANT/OBJECT/ARRAY 的 16 MB 单值上限）</p>
@@ -1331,6 +1343,8 @@ ACCOUNTADMIN        账户内顶层，包含 SYSADMIN + SECURITYADMIN
 <p>⚠️ <strong>读入宽松、写出严格</strong>：<u>加载</u> Parquet 支持 <code>AUTO/SNAPPY/GZIP/BROTLI/ZSTD/LZO/NONE</code>（宽），<u>卸载</u>只有四个（窄）。<strong>题干先看是 load 还是 unload——这是本考点最常设的陷阱。</strong></p>
 <p>⚠️ <code>GZIP</code> 最眼熟、又确实是 Snowflake 多处的默认值，<strong>所以它是这题的标准诱饵</strong>。<u>「最常见的那个」不等于「这个格式允许的那个」。</u></p>
 <p><strong>★ 卸载的「最佳实践」题选<u>显式指定 named file format</u></strong>（<code>FILE_FORMAT = (FORMAT_NAME = 'my_fmt')</code>），理由是：卸载与日后重新加载<strong>共用同一份格式定义</strong>（往返一致）、可复用、<strong>避免默认值意外</strong>（默认 CSV 是逗号分隔）、格式变更集中一处。<u>这是普适建议，所以在"哪个是 best practice"里通常就是它。</u></p>
+<p>⚠️ <strong>浮点数精度：CSV/JSON 卸载会截断到约 <code>(15,9)</code> 精度</strong>（15位有效数字、小数点后9位）；<strong><code>Parquet</code> 保留完整浮点精度不截断</strong>——"数据卸载后精度丢失怎么办"这类题，答案就是换成 Parquet。</p>
+<p><strong>推荐做法：卸载直接指向目标云存储位置</strong>（<code>COPY INTO 's3://...'</code>），<strong>不建议</strong>先卸到 Snowflake 内部 stage/用户 stage 再手动搬到云存储——多一次跳转纯属浪费。</p>
 </blockquote>
 <h3>半结构化数据</h3>
 <blockquote class="key core">
@@ -1342,6 +1356,7 @@ ACCOUNTADMIN        账户内顶层，包含 SYSADMIN + SECURITYADMIN
 <ul>
 <li><strong>VARIANT</strong> 类型，单个值上限 <strong>16 MB</strong>（压缩后）</li>
 <li>用 <code>:</code> 取字段（<code>src:name</code>），<code>::</code> 转类型</li>
+<li>⚠️ <strong>JSON key 名区分大小写</strong>——表名/列名（<code>src</code>）本身不区分大小写，但冒号后的 <strong>key 必须完全匹配源 JSON 里的大小写</strong>（如 <code>salesPerson</code> 写成 <code>salesperson</code> 会取不到值）。表名可任意大小写（<code>SRC</code>/<code>src</code> 等价），但 key 部分不行。</li>
 <li><strong>FLATTEN / LATERAL FLATTEN</strong> 把数组展开成行</li>
 <li>Snowflake 会自动为 VARIANT 中的重复字段提取元数据以提升查询性能</li>
 <li><strong>其余工具</strong>：<code>PARSE_JSON</code>（字符串→VARIANT）、<code>TRY_PARSE_JSON</code>（安全解析）、<code>GET_PATH</code>（安全取值）、<code>OBJECT_CONSTRUCT</code> / <code>ARRAY_AGG</code>（反向：行→嵌套）</li>
@@ -1628,6 +1643,12 @@ SELECT * FROM my_mv m JOIN other_table t ON m.id = t.id;
 <blockquote class="key">
 <p>考纲 4.1 原文写的是 <strong>“Query Profile/Query insights”</strong>，两个并列。<strong>Query Insights</strong> 是 Snowsight 里的新面板：Query Profile 给你<strong>原始执行细节</strong>（要你自己看懂），Query Insights 直接<strong>把常见问题诊断出来告诉你</strong>——例如"这个查询有 exploding join""剪枝无效""用了非最优的 join 顺序"。<br><strong>一句话区分</strong>：Profile = 数据；Insights = 结论。下面四条正是 Insights 会自动标出来的东西。</p>
 </blockquote>
+<blockquote class="key">
+<p><strong>Query Profile 本身的定义题</strong>：它是查询执行计划的<strong>图形化表示</strong>（graphical representation of the processing plan），<strong>不是</strong>"按耗时排序的可折叠节点列表"——那只是它 UI 呈现的一部分，不是定义本身。</p>
+<p><strong>算子框上的橙色条 = 该算子占查询总耗时的<u>比例</u></strong>，不是"执行进度条"。条越长，这个算子越值得优化。</p>
+<p>看到<strong><code>UnionAll</code> 算子后面多跟了一个额外的 <code>Aggregate</code> 算子</strong>，通常意味着写了 <code>UNION</code>（没加 <code>ALL</code>）——Snowflake 需要额外一步去重，这一多余的 Aggregate 就是"忘了加 ALL"的可见痕迹。</p>
+<p><strong>External Function 专属的 Profile 统计字段是 <code>Total invocations</code>（总调用次数）</strong>，不是"网络传输字节数"——外部函数按次计费，调用次数直接对应成本，这是它单独被追踪的原因。</p>
+</blockquote>
 <ul>
 <li><strong>Bytes spilled to local storage</strong>：内存不够，溢出到本地 SSD → 考虑<strong>加大 warehouse</strong></li>
 <li><strong>Bytes spilled to remote storage</strong>：更严重，溢出到远程存储 → 必须加大 warehouse 或优化查询</li>
@@ -1687,6 +1708,7 @@ SELECT * FROM my_mv m JOIN other_table t ON m.id = t.id;
 <p>⚠️ <strong>表上<u>没有</u> <code>MODIFY</code> 权限。</strong><code>MODIFY</code> 在 Snowflake 里确实存在，但只用于 <strong>warehouse / resource monitor / 账户级参数</strong>（<code>GRANT MODIFY ON WAREHOUSE …</code>）。<strong>对表做结构性变更用的是 <code>OWNERSHIP</code>。</strong><br>
 <u>这是「移植型假选项」：词是真的，位置是假的</u>（同族：<code>WAREHOUSE_USAGE</code> schema）。<strong>造词干扰有两种——凭空编，和把真词挪到不存在它的地方。后者更难识破。</strong></p>
 <p>⚠️ <strong>「must have which of the following」= 找<u>全部</u>必要条件</strong>，别在选出一个合理项后就停。<u>问句是复数就默认不止一个。</u></p>
+<p>⚠️ <strong>SOS 支持范围有硬限制</strong>：只支持<strong>未被 row access policy 保护</strong>的表/视图；<strong>不支持 materialized view</strong>。题干问"SOS supports"时，先排除这两类。</p>
 </blockquote>
 <h3>症状 → 对策（先问"是不是 warehouse 问题"）</h3>
 <blockquote class="key core">
@@ -1743,6 +1765,15 @@ SELECT * FROM my_mv m JOIN other_table t ON m.id = t.id;
 <p>另：<strong>Stored Procedure 还多一种语言 —— Snowflake Scripting</strong>（SQL 的过程化扩展，<code>BEGIN…END</code>），<strong>UDF 不能用</strong>。</p>
 </blockquote>
 <p><strong>UDTF 调用语法：</strong><code>SELECT * FROM TABLE(my_udtf(col1))</code>——UDTF 返回多行多列，必须包在 <code>TABLE()</code> 里放进 <code>FROM</code>；Scalar UDF 直接进 <code>SELECT</code>；Stored Procedure 只能 <code>CALL</code>，不能出现在查询里。</p>
+<p><strong>UDTF 定义时的返回子句用 <code>RETURNS TABLE (col1 TYPE, col2 TYPE, ...)</code></strong>——关键字是 <code>TABLE</code>，不是 <code>VALUES</code>（`VALUES` 不是任何 RETURNS 子句里会出现的关键字）。</p>
+<h3>SQL 杂项速记</h3>
+<ul>
+<li><strong>近似去重计数</strong>：数据量巨大时用 <strong><code>HLL()</code> / <code>APPROX_COUNT_DISTINCT()</code></strong>（HyperLogLog 算法）估算 distinct 数量，比精确 <code>COUNT(DISTINCT ...)</code> 快得多、省内存，代价是<strong>近似值</strong>。<strong><code>MD5</code></strong> 是哈希函数，不用于计数。</li>
+<li><strong>采样方法</strong>：<code>SAMPLE</code> / <code>TABLESAMPLE</code> 默认 <strong>BERNOULLI</strong>（逐行独立采样，概率均匀）；<code>SYSTEM</code>/<code>BLOCK</code> 是<strong>按数据块采样</strong>（更快但可能不够随机，小表可能采不到）。<code>SAMPLE(0)</code> → 空结果集；<code>SAMPLE(100)</code> → 返回<strong>整张表</strong>（100% 采样 = 全部）。</li>
+<li><strong>递归查询</strong>（层级深度未知时）：标准 SQL 用 <strong><code>WITH RECURSIVE ...</code></strong>（CTE 递归）；Snowflake 也支持 Oracle 风格的 <strong><code>CONNECT BY</code></strong>。两者都能处理"层级数不固定"的场景；<code>LISTAGG</code> 是字符串聚合、<code>QUALIFY</code> 是窗口函数结果过滤，都跟递归无关，不要混选。</li>
+<li><strong>循环</strong>（Snowflake Scripting，仅 Stored Procedure）：<strong><code>REPEAT ... UNTIL <condition> END REPEAT</code></strong> 是"先执行、直到条件为真才停"的循环；<code>WHILE</code> 是"条件为真才继续执行"，语义相反，题干问"iterates until a condition becomes true"时答案是 <code>REPEAT</code>，不是 <code>WHILE</code>。</li>
+<li><strong>集合运算符</strong>：<code>INTERSECT</code> = 两表都有的值（交集）；<code>MINUS</code>（= <code>EXCEPT</code>）= 只在左表、不在右表的值（差集）。问"两边都存在的值"选 <code>INTERSECT</code>，别看到"两个表"就反射选 <code>MINUS</code>。</li>
+</ul>
 <h3>Sequence</h3>
 <blockquote class="key core">
 <p><strong>★ 只要 <code>nextval</code> 被执行，序列就前进——不管它写在哪种语句里</strong>（<code>SELECT</code> / <code>INSERT</code> / <code>UPDATE</code> / CTE / 子查询都算）。<strong>第 n 次调用的值 = start + (n-1) × increment</strong>。出题套路：把一次调用藏进 <code>INSERT ... VALUES (seq.nextval)</code> 里，数漏一次就全错。</p>
